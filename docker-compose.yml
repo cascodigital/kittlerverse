@@ -1,0 +1,18 @@
+services:
+  galaxy-web:
+    image: nginx:alpine
+    container_name: galaxy-web
+    ports:
+      - "8096:80"
+    volumes:
+      - ./www:/usr/share/nginx/html:ro
+    restart: always
+  galaxy-poller:
+    image: docker:cli
+    container_name: galaxy-poller
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./www:/out
+      - ./poller.sh:/poller.sh:ro
+    entrypoint: ["sh","/poller.sh"]
+    restart: always

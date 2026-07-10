@@ -1,0 +1,659 @@
+<meta charset="utf-8">
+<title>KITTLERVERSE — Container Star System</title>
+<style>
+  :root{
+    --void:#05070f; --ink:#e8ecf5; --dim:#7d879c;
+    --cyan:#6ee7ff; --orange:#ff9e64; --violet:#b58cff; --green:#5eea8d; --red:#ff6b6b;
+  }
+  html,body{height:100%}
+  body{margin:0;background:var(--void);color:var(--ink);
+       font-family:ui-monospace,'Cascadia Code','JetBrains Mono',Menlo,Consolas,monospace;
+       overflow:hidden}
+  canvas{display:block;position:fixed;inset:0;cursor:crosshair}
+  .hud{position:fixed;pointer-events:none;z-index:5}
+  #title{top:22px;left:26px}
+  #title h1{margin:0;font-size:clamp(18px,2.6vw,30px);font-weight:700;letter-spacing:.35em;color:var(--ink);
+    text-shadow:0 0 18px rgba(110,231,255,.5)}
+  #title h1 b{color:var(--cyan);font-weight:700}
+  #title p{margin:6px 0 0;font-size:11px;letter-spacing:.18em;color:var(--dim);text-transform:uppercase}
+  #stats{top:26px;right:26px;text-align:right;font-size:11px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;line-height:1.9}
+  #stats .n{color:var(--green);font-size:26px;letter-spacing:0;text-shadow:0 0 14px rgba(94,234,141,.6)}
+  #hint{bottom:20px;left:26px;font-size:11px;letter-spacing:.22em;color:var(--dim);text-transform:uppercase;
+        animation:pulse 3s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:.35}50%{opacity:.9}}
+  #credit{bottom:18px;right:22px;font-size:10px;letter-spacing:.1em;color:var(--dim)}
+  #legend{left:26px;top:96px;pointer-events:auto;font-size:10px;letter-spacing:.08em;
+          color:var(--dim);line-height:2;text-transform:uppercase}
+  #legend button{background:none;border:1px solid rgba(110,231,255,.35);color:var(--cyan);
+          font:inherit;font-size:10px;letter-spacing:.22em;padding:6px 12px;cursor:pointer}
+  #legend button:hover{border-color:var(--cyan);background:rgba(110,231,255,.08)}
+  #legend .body{display:none;margin-top:8px;background:rgba(3,5,12,.92);
+          border:1px solid rgba(110,231,255,.2);padding:12px 16px;backdrop-filter:blur(4px)}
+  #legend.open .body{display:block}
+  #legend span{display:block}
+  #legend .rd{color:var(--red)}
+  #legend .ft{margin-top:6px;font-size:9px;opacity:.7}
+  #credit b{color:var(--cyan);font-weight:400}
+
+  /* tooltip */
+  #tip{position:fixed;z-index:10;pointer-events:none;display:none;max-width:280px;
+       background:rgba(8,12,24,.92);border:1px solid rgba(110,231,255,.35);padding:10px 13px;
+       box-shadow:0 0 24px rgba(110,231,255,.15);backdrop-filter:blur(4px)}
+  #tip .nm{font-size:13px;color:var(--cyan);letter-spacing:.06em}
+  #tip .cat{font-size:9px;letter-spacing:.2em;text-transform:uppercase;margin-top:2px}
+  #tip .ds{font-size:11px;color:var(--ink);margin-top:7px;line-height:1.55}
+  #tip .st{font-size:9px;letter-spacing:.15em;margin-top:8px;text-transform:uppercase}
+
+  /* dossier panel */
+  #panel{position:fixed;z-index:8;top:0;right:0;height:100%;width:min(340px,86vw);
+         background:rgba(6,9,18,.94);border-left:1px solid rgba(110,231,255,.25);
+         transform:translateX(105%);transition:transform .35s cubic-bezier(.2,.8,.2,1);
+         padding:80px 26px 26px;box-sizing:border-box;backdrop-filter:blur(6px)}
+  #panel.open{transform:none}
+  #panel .close{position:absolute;top:26px;right:22px;background:none;border:1px solid var(--dim);color:var(--dim);
+        font:inherit;font-size:11px;padding:4px 10px;cursor:pointer;letter-spacing:.15em}
+  #panel .close:hover,#panel .close:focus-visible{color:var(--cyan);border-color:var(--cyan);outline:none}
+  #panel .eyebrow{font-size:9px;letter-spacing:.28em;text-transform:uppercase;color:var(--dim)}
+  #panel h2{margin:8px 0 2px;font-size:22px;letter-spacing:.04em;color:var(--ink);word-break:break-all}
+  #panel .cat{font-size:10px;letter-spacing:.2em;text-transform:uppercase}
+  #panel .ds{font-size:12.5px;line-height:1.7;color:var(--ink);margin-top:18px;border-top:1px solid rgba(125,135,156,.25);padding-top:16px}
+  #panel dl{margin:22px 0 0;font-size:11px;line-height:2;letter-spacing:.05em}
+  #panel dt{color:var(--dim);text-transform:uppercase;font-size:9px;letter-spacing:.22em;margin-top:10px}
+  #panel dd{margin:0;color:var(--ink)}
+  @media (prefers-reduced-motion:reduce){
+    #hint{animation:none}
+    #panel{transition:none}
+  }
+</style>
+
+<div class="hud" id="title">
+  <h1>KITTLER<b>VERSE</b></h1>
+  <p>container galaxy · 9 star systems · one singularity · orange pi 5</p>
+</div>
+<div class="hud" id="stats">
+  <span class="n" id="cnum">56</span><br><span id="sline">containers aboard</span>
+</div>
+<div class="hud" id="hint">drag to travel · scroll to zoom into a system · click a body for dossier</div>
+<div class="hud" id="live" style="top:104px;right:26px;text-align:right;font-size:10px;letter-spacing:.18em;color:var(--dim);text-transform:uppercase"></div>
+<div class="hud" id="credit">cartography by <b>Skippy the Magnificent</b> · via Claude Code — resident of the AI CORE system</div>
+<div class="hud" id="legend">
+  <button id="legbtn" aria-expanded="false">HOW THE METRICS WORK ▾</button>
+  <div class="body">
+    <span>◉ sun size · combined RAM of its worlds</span>
+    <span>● planet size · container RAM</span>
+    <span>↻ orbit speed · live CPU load</span>
+    <span>◐ saturn rings · CPU ≥ 20% (double ≥ 40%)</span>
+    <span class="rd">● dead &amp; dormant migrate to the white dwarf</span>
+    <span>☽ moons · support containers (db, cron, redis)</span>
+    <span>○ white glow · (re)started in the last 24 h</span>
+    <span>⨀ closer to the hole · bigger system</span>
+    <span class="ft">telemetry refreshes every 60 s</span>
+  </div>
+</div>
+
+<div id="tip" role="status"></div>
+
+<aside id="panel" aria-hidden="true">
+  <button class="close" id="pclose">ESC ✕</button>
+  <div class="eyebrow">orbital body dossier</div>
+  <h2 id="pname"></h2>
+  <div class="cat" id="pcat"></div>
+  <div class="ds" id="pdesc"></div>
+  <dl>
+    <dt id="dtimg">image</dt><dd id="pimg"></dd>
+    <dt>status</dt><dd id="pstat"></dd>
+    <dt>star system</dt><dd id="pring"></dd>
+    <dt>telemetry</dt><dd id="ptel">—</dd>
+  </dl>
+</aside>
+
+<canvas id="cv"></canvas>
+
+<script>
+'use strict';
+// ============ DATA — real inventory, 2026-07-09 ============
+const RINGS = [
+ {name:'AI CORE', color:'#6ee7ff', bodies:[
+  ['claude-terminal','claude-terminal:ttyd','The Skippy Console. A web terminal where Claude, Gemini and Codex do sysadmin work around the clock.'],
+  ['claude-worker','claude-claude-worker','Headless Claude. Builds dashboards while nobody watches. Unaware it lives in a container.'],
+  ['claude-portal','nginx:alpine','Front door to the machine cult.'],
+  ['claude-upload','python:3.11-slim','File-drop endpoint for feeding the AIs.'],
+  ['claude-syncthing','linuxserver/syncthing','Mirrors the AI brain between laptop and mothership. No thought is ever lost.'],
+  ['cockpit','python:3.11-slim','Black-box recorder for every conversation with the machines. Semantic search included.'],
+  ['chatgpt-site-browser','chatgpt-site-browser','A browser that browses so I don’t have to.'],
+  ['whatsapp-mcp-collector','whatsapp-mcp-server','Lets the AI read WhatsApp. Nothing ominous about that at all.'],
+ ]},
+ {name:'TRADING FLOOR', color:'#5eea8d', bodies:[
+  ['stock-analysis-api','stock-service-stock-api','Technical + fundamental analysis of B3 stocks, as an API.'],
+  ['stock-analysis-mcp','stock-service-stock-mcp','Plugs the stock engine straight into the AI. The robot picks the trades.'],
+  ['acoes-treemap','acoes-treemap','Live portfolio treemap on a dedicated 1080p wall display. Bloomberg terminal at home, sort of.'],
+ ]},
+ {name:'MEDIA CARTEL', color:'#ff6b6b', bodies:[
+  ['plexms','plexinc/pms-docker','Plex. The reason the household tolerates the rest of this system.'],
+  ['sonarr','linuxserver/sonarr','TV acquisition automaton. It hunts, so I may feast.'],
+  ['radarr','linuxserver/radarr','Same, but movies.'],
+  ['prowlarr','linuxserver/prowlarr','The cartel’s phone book.'],
+  ['qbittorrent','linuxserver/qbittorrent','Delivery truck, torrent flavor.'],
+  ['sabnzbd','linuxserver/sabnzbd','Delivery truck, usenet flavor.'],
+  ['overseerr','linuxserver/overseerr','Family requests content like it’s room service.'],
+  ['tautulli','linuxserver/tautulli','Knows exactly who watched what, and how much they skipped.'],
+  ['metube','alexta69/metube','Point at video, receive file.'],
+  ['legendas','subtitle-auto-translator','AI subtitle translator. Wakes on schedule, does its job, exits 0. A lifestyle.',1],
+ ]},
+ {name:'COMMS ARRAY', color:'#6ea8ff', bodies:[
+  ['cloudflared ×3','cloudflare/cloudflared','Three Cloudflare tunnels, one per domain. Zero open ports to space.',0,'cloudflared-'],
+  ['wireguard','wg-easy','VPN. My phone is always, technically, at home.'],
+  ['meshcentral','meshcentral','TeamViewer, but I own the server.'],
+  ['suporte-remoto-web','nginx:alpine','Remote-support page for clients.'],
+  ['intellissh','clusterzx/intellissh','Web SSH with an AI copilot. Because of course.'],
+  ['chhoto-url','chhoto-url','Sovereign URL shortener.'],
+  ['gptwol','misterbabou/gptwol','Wake-on-LAN panel. Necromancy for PCs.'],
+  ['clipcascade','clipcascade','Clipboard sync across every device I own.',0,'clipcascade-'],
+ ]},
+ {name:'SCIENCE LAB', color:'#b58cff', bodies:[
+  ['ttrss','wangqiru/ttrss','RSS never died. It moved into my basement.'],
+  ['ttrss_postgres','postgres:16-alpine','The basement’s filing cabinet.'],
+  ['hmobrss','hmobrss','Builds RSS feeds for sites too rude to offer one.'],
+  ['flaresolverr','flaresolverr','Cloudflare-challenge negotiator for the scraper above.',0,'hmobrss_flaresolverr'],
+  ['mercury','mercury-parser-api','Strips web pages to pure text. No ads survive.'],
+  ['libretranslate','libretranslate','Self-hosted translation engine. The UN interpreter of the stack.'],
+ ]},
+ {name:'BUSINESS OPS', color:'#ffd166', bodies:[
+  ['glpi','glpi-glpi','ITSM helpdesk. Real tickets, real clients, real SLAs.'],
+  ['glpi-db','mariadb:11.8','Where the tickets sleep.'],
+  ['glpi-cron','glpi-glpi-cron','The helpdesk’s alarm clock.'],
+  ['ninja-app','invoiceninja:5','Generates the invoices that justify this entire star system.'],
+  ['ninja-web','nginx:alpine','Invoice Ninja’s reception desk.'],
+  ['ninja-db','mariadb:10.6','Invoice Ninja’s memory.'],
+  ['ninja-redis','redis:alpine','Invoice Ninja’s caffeine.'],
+ ]},
+ {name:'CREW QUARTERS', color:'#ff9e64', bodies:[
+  ['cozinha','cozinha','Deploys recipes to the kitchen TV and builds a cooking playlist. Yes, the kitchen has a CI/CD pipeline.'],
+  ['shse-http','rampartfts/shse','Feeds the living-room TV photo slideshow.'],
+  ['radar-teatros','nginx:alpine','Local theater listings. Culture, containerized.'],
+ ]},
+ {name:'SHIELDS & SENSORS', color:'#9aa7ff', bodies:[
+  ['vaultwarden','vaultwarden/server','All the passwords, none of the cloud.'],
+  ['dockhand','fnsys/dockhand','The harbormaster of this madness.'],
+  ['dockhand-agent','finsys/hawser','The harbormaster’s deckhand.'],
+  ['glances','nicolargo/glances','The system’s vital signs.'],
+  ['speedtest-tracker','speedtest-tracker','Evidence locker for when the ISP lies.'],
+ ]},
+ {name:'ENGINE ROOM', color:'#ff7847', bodies:[
+  ['n8n','n8nio/n8n','Automation brainstem. If it happens on a schedule, n8n did it — including inventorying this very galaxy, daily at 04:00.'],
+  ['watchtower','nickfedor/watchtower','Auto-updates every container while I sleep. What could go wrong.'],
+ ]},
+];
+
+// ============ SCENE ============
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+const DPR=Math.min(devicePixelRatio||1,2);
+let W,H,CX,CY;
+function resize(){W=innerWidth;H=innerHeight;cv.width=W*DPR;cv.height=H*DPR;
+  cv.style.width=W+'px';cv.style.height=H+'px';ctx.setTransform(DPR,0,0,DPR,0,0);
+  CX=W/2;CY=H/2;}
+addEventListener('resize',resize);resize();
+
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// stars
+const stars=[];for(let i=0;i<420;i++){stars.push({x:Math.random(),y:Math.random(),
+  r:Math.random()*1.3+.3,tw:Math.random()*6.28,sp:.5+Math.random()*2});}
+
+// bodies — each theme is a star system: planets orbit their sun, suns orbit the black hole
+// planets get their own colors — a system is a family, not a uniform
+const PCOLS=['#8fd3c7','#e0b97e','#c96f4a','#9fc2e8','#c9a7eb','#a8d582','#e89fb7','#d9d2a6','#7fb2b8','#e8c15e'];
+const bodies=[];let total=0;
+RINGS.forEach((ring,ri)=>{
+  const n=ring.bodies.length;ring.n=n;
+  ring.bodies.forEach((b,i)=>{
+    total++;
+    bodies.push({name:b[0],img:b[1],desc:b[2],dormant:!!b[3],match:b[4]||b[0],ring,ri,
+      ang:(i/n)*Math.PI*2,
+      idx:i, // own orbit radius inside the system — no planetary pile-ups
+      col:PCOLS[(ri*3+i)%PCOLS.length],
+      rtilt:((ri*7+i*13)%10)/10*Math.PI, // ring tilt, deterministic
+      // one protoplanetary disk, one direction: the whole system orbits the same way (real rule, not just Sol)
+      speed:(0.00006+0.00003*Math.random())*(rnd(ri*13+5)>0.5?-1:1),
+      r:4.5+Math.min(b[0].length*0.14,2.5),
+      x:0,y:0});
+  });
+});
+document.getElementById('sline').textContent='containers aboard · '+total+' orbital bodies';
+
+// chaotic orbital elements per system — deterministic, seeded by index
+function rnd(seed){const x=Math.sin(seed*127.1+311.7)*43758.5453;return x-Math.floor(x);}
+function assignOrbit(ring,ri){
+  // populous systems sink deeper into the gravity well — heavyweights hug the singularity
+  ring.orbR=0.32+(1-Math.min(ring.n||1,10)/10)*0.42+rnd(ri*3+1)*0.08;
+  ring.ecc=0.5+rnd(ri*3+2)*0.4;              // how squashed the ellipse is
+  ring.tilt=rnd(ri*3+3)*Math.PI;             // orbit plane rotation
+  ring.phase=(ri/9)*Math.PI*2+rnd(ri*7)*1.2; // spread out, with jitter
+}
+RINGS.forEach(assignOrbit);
+
+// static galactic layout — suns are light-years apart, they don't visibly move.
+// relaxation pass shoves systems apart so no sun crowds another.
+function layoutSystems(){
+  RINGS.forEach((ring,ri)=>{
+    if(ring.orbR===undefined)assignOrbit(ring,ri);
+    const R=ring.orbR;
+    const ex=Math.cos(ring.phase)*R,ey=Math.sin(ring.phase)*R*ring.ecc;
+    ring.ux=(ex*Math.cos(ring.tilt)-ey*Math.sin(ring.tilt))*1.18; // wide-screen stretch
+    ring.uy=(ex*Math.sin(ring.tilt)+ey*Math.cos(ring.tilt))*0.8;
+    ring.sysF=0.06+Math.min(ring.n||1,10)*0.007;
+  });
+  for(let it=0;it<60;it++){
+    for(let i=0;i<RINGS.length;i++)for(let j=i+1;j<RINGS.length;j++){
+      const a=RINGS[i],c=RINGS[j];
+      let dx=c.ux-a.ux,dy=c.uy-a.uy,d=Math.hypot(dx,dy)||0.001;
+      const min=a.sysF+c.sysF+0.12; // generous no-fly zone — zooming one system shows only that system
+      if(d<min){const p=(min-d)/2;dx/=d;dy/=d;
+        a.ux-=dx*p;a.uy-=dy*p;c.ux+=dx*p;c.uy+=dy*p;}
+    }
+  }
+}
+layoutSystems();
+
+// star lore — shown when you click a sun
+const STARLORE={
+ 'AI CORE':'The strange blue star the rest of the galaxy quietly orbits its opinions around. Three artificial minds live here and do the sysadmin work while the owner sleeps.',
+ 'TRADING FLOOR':'A green dwarf that flares violently between 10:00 and 17:00 B3 time, then goes eerily quiet.',
+ 'MEDIA CARTEL':'The most massive star in the KITTLERVERSE. Officially an entertainment system; unofficially the reason the household tolerates everything else.',
+ 'COMMS ARRAY':'Every signal that leaves or enters the galaxy passes through this star. Zero open ports to space — tunnels only.',
+ 'SCIENCE LAB':'A quiet violet star where the written web is captured, stripped, translated and filed.',
+ 'BUSINESS OPS':'The yellow star that pays for the whole galaxy. Tickets in, invoices out.',
+ 'CREW QUARTERS':'A warm little star for the humans: recipes on the kitchen TV, photos in the living room, theater listings.',
+ 'SHIELDS & SENSORS':'Passwords, monitoring and evidence against lying ISPs. The galaxy’s immune system.',
+ 'ENGINE ROOM':'Small, dim, and if it ever dies the entire galaxy stops on a schedule. n8n lives here.',
+ 'UNCHARTED':'A star that was not on any chart. Bodies appear here when new containers are detected.'};
+
+// collect planet names per system (for the star dossier)
+RINGS.forEach(r=>{r.planets=r.bodies.map(b=>b[0]);});
+
+// moons: support containers orbit their parent planet, not the sun (compose hierarchy → orbital hierarchy)
+const MOONS={'glpi-db':'glpi','glpi-cron':'glpi','ninja-web':'ninja-app','ninja-db':'ninja-app',
+             'ninja-redis':'ninja-app','ttrss_postgres':'ttrss','flaresolverr':'hmobrss'};
+{const mi={};
+ bodies.forEach(b=>{
+  const pn=MOONS[b.name];
+  if(pn){b.parent=bodies.find(p=>p.name===pn)||null;
+    if(b.parent){mi[pn]=mi[pn]||0;b.moonIdx=mi[pn]++;}}
+ });}
+
+// the white dwarf: graveyard star near the singularity — dead & dormant bodies leave home and orbit it
+const WD={ux:0.17,uy:-0.16};
+
+// container age from docker status string ("Up 3 days", "Up About an hour") → hours
+function parseAge(s){
+  const m=/Up (?:About )?(?:an?\s+|(\d+)\s+)?(second|minute|hour|day|week|month)/i.exec(s||'');
+  if(!m)return 999;
+  return (m[1]?+m[1]:1)*({second:1/3600,minute:1/60,hour:1,day:24,week:168,month:720}[m[2].toLowerCase()]||24);
+}
+
+// the singularity is a body too — click the π for the host dossier
+const BH={bh:true,name:'orange pi 5 — the singularity',
+  img:'RK3588 · 8× ARM64 cores · 8 GB LPDDR4X · NVMe 117 GB · Armbian',
+  desc:'The gravitational center of the KITTLERVERSE. Every sun, every planet, every workload in this galaxy exists inside this one palm-sized board drawing about as much power as an LED bulb. It does not orbit anything. Everything orbits it.',
+  ring:{name:'SINGULARITY',color:'#ff9e64'},x:0,y:0};
+
+// camera: drag pans, wheel zooms toward the cursor
+let zoom=1,targetZoom=1,panX=0,panY=0,targetPanX=0,targetPanY=0;
+let dragging=false,lastX=0,lastY=0,downX=0,downY=0;
+let hovered=null,selected=null;
+const mouse={x:-999,y:-999};
+
+cv.addEventListener('wheel',e=>{e.preventDefault();
+  const z0=targetZoom;
+  targetZoom=Math.max(.5,Math.min(6,targetZoom*(e.deltaY<0?1.14:0.88)));
+  const k=targetZoom/z0; // keep the point under the cursor fixed while zooming
+  targetPanX=(e.clientX-CX)-((e.clientX-CX)-targetPanX)*k;
+  targetPanY=(e.clientY-CY)-((e.clientY-CY)-targetPanY)*k;
+},{passive:false});
+cv.addEventListener('pointerdown',e=>{dragging=true;lastX=downX=e.clientX;lastY=downY=e.clientY;cv.setPointerCapture(e.pointerId);});
+cv.addEventListener('pointerup',e=>{
+  dragging=false;
+  if(Math.hypot(e.clientX-downX,e.clientY-downY)<5){ if(hovered){select(hovered);} else {closePanel();} }
+});
+cv.addEventListener('pointermove',e=>{
+  mouse.x=e.clientX;mouse.y=e.clientY;
+  if(dragging){targetPanX+=e.clientX-lastX;targetPanY+=e.clientY-lastY;lastX=e.clientX;lastY=e.clientY;}
+});
+cv.addEventListener('pointerleave',()=>{mouse.x=-999;hovered=null;tip.style.display='none';});
+
+// panel
+const panel=document.getElementById('panel'),tip=document.getElementById('tip');
+function select(b){
+  selected=b;
+  if(b.star){ // star dossier: what the system is + its worlds
+    const r=b.ring;
+    document.getElementById('pname').textContent=r.name;
+    const pc=document.getElementById('pcat');pc.textContent='home star · '+r.n+' planets';pc.style.color=r.color;
+    document.getElementById('pdesc').textContent=STARLORE[r.name]||'A sun of the KITTLERVERSE.';
+    document.getElementById('dtimg').textContent='planets';
+    document.getElementById('pimg').textContent=(r.planets||[]).join(' · ')||'—';
+    const ps=document.getElementById('pstat');
+    ps.textContent=r.alive+' of '+r.n+' planets in stable orbit';
+    ps.style.color=r.alive===r.n?'var(--green)':'var(--red)';
+    document.getElementById('pring').textContent='Sun — its size tracks the combined RAM of its worlds';
+    document.getElementById('ptel').textContent=Math.round(r.mem)+' MB RAM · '+r.cpu.toFixed(1)+'% CPU across the system';
+    panel.classList.add('open');panel.setAttribute('aria-hidden','false');
+    return;
+  }
+  document.getElementById('dtimg').textContent='image';
+  document.getElementById('pname').textContent=b.name;
+  const pc=document.getElementById('pcat');pc.textContent=b.ring.name;pc.style.color=b.ring.color;
+  document.getElementById('pdesc').textContent=b.desc;
+  document.getElementById('pimg').textContent=b.img;
+  const ps=document.getElementById('pstat');
+  const dead=b.live?!b.live.running:b.dormant;
+  ps.textContent=b.live?(b.live.running?'STABLE ORBIT — '+b.live.status:'ADRIFT — '+b.live.status)
+    :(b.dormant?'DORMANT — wakes on schedule, exits 0':'STABLE ORBIT — up and healthy');
+  ps.style.color=dead?'var(--red)':'var(--green)';
+  document.getElementById('pring').textContent=b.bh
+    ?'Galactic center — all '+RINGS.length+' systems orbit it'
+    :'System '+(b.ri+1)+' of '+RINGS.length+' — orbiting the '+b.ring.name+' star';
+  document.getElementById('ptel').textContent=b.live
+    ?(b.live.mem.toFixed(1)+' MB RAM · '+b.live.cpu.toFixed(2)+'% CPU'+(b.live.count>1?' ('+b.live.count+' containers)':''))
+    :'no live feed (static chart)';
+  panel.classList.add('open');panel.setAttribute('aria-hidden','false');
+}
+function closePanel(){selected=null;panel.classList.remove('open');panel.setAttribute('aria-hidden','true');}
+document.getElementById('pclose').addEventListener('click',closePanel);
+const legend=document.getElementById('legend'),legbtn=document.getElementById('legbtn');
+legbtn.addEventListener('click',()=>{
+  const open=legend.classList.toggle('open');
+  legbtn.setAttribute('aria-expanded',open);
+  legbtn.textContent='HOW THE METRICS WORK '+(open?'▴':'▾');
+});
+addEventListener('keydown',e=>{if(e.key==='Escape')closePanel();});
+
+
+// ============ LIVE TELEMETRY ============
+// Served next to this file by galaxy-poller on the mothership.
+// On claude.ai (CSP) or file:// the fetch fails and we stay in static-map mode.
+let liveTs=null;
+function applyLive(data){
+  const entries=data.containers.slice();
+  const claimed=new Set();
+  for(const b of bodies){ b.live=null;
+    let mine=entries.filter(e=>e.name===b.match&&!claimed.has(e.name));
+    if(!mine.length) mine=entries.filter(e=>e.name.startsWith(b.match)&&!claimed.has(e.name));
+    if(mine.length){
+      mine.forEach(e=>claimed.add(e.name));
+      b.live={running:mine.every(e=>e.state==='running'),
+              cpu:mine.reduce((a,e)=>a+e.cpu,0),
+              mem:mine.reduce((a,e)=>a+e.mem,0),
+              status:mine[0].status,count:mine.length};
+      if(b.live.running){ b.drift=0; } 
+    }
+  }
+  // uncharted: containers not in the map get their own outer ring
+  const unknown=entries.filter(e=>!claimed.has(e.name));
+  for(const e of unknown){
+    let b=bodies.find(x=>x.uncharted&&x.name===e.name);
+    if(!b){
+      let ring=RINGS.find(r=>r.name==='UNCHARTED');
+      if(!ring){ring={name:'UNCHARTED',color:'#9aa7ff',bodies:[]};RINGS.push(ring);}
+      ring.n=(ring.n||0)+1;
+      (ring.planets=ring.planets||[]).push(e.name);
+      b={name:e.name,img:'?',desc:'New body detected. Not yet on the charts.',dormant:false,
+         match:e.name,ring,ri:RINGS.length-1,uncharted:true,
+         ang:Math.random()*6.28,idx:ring.n-1,speed:0.00006,r:5,x:0,y:0,
+         col:PCOLS[ring.n%PCOLS.length],rtilt:(ring.n%10)/10*Math.PI};
+      bodies.push(b);
+    }
+    b.live={running:e.state==='running',cpu:e.cpu,mem:e.mem,status:e.status,count:1};
+  }
+  liveTs=new Date(data.ts);
+  const up=entries.filter(e=>e.state==='running').length;
+  document.getElementById('cnum').textContent=entries.length;
+  document.getElementById('sline').textContent=up+' up · '+(entries.length-up)+' down';
+  document.getElementById('live').innerHTML=
+    '<span style="color:var(--green)">● LIVE TELEMETRY</span><br>synced '+liveTs.toLocaleTimeString();
+}
+async function poll(){
+  try{const r=await fetch('telemetry.json',{cache:'no-store'});
+      if(r.ok) applyLive(await r.json());}catch(e){}
+}
+poll();setInterval(poll,60000);
+
+// warp intro
+let warp=(reduced||location.hash==='#still')?0:1;
+
+function frame(t){
+  requestAnimationFrame(frame);
+  zoom+=(targetZoom-zoom)*.08;
+  panX+=(targetPanX-panX)*.12;
+  panY+=(targetPanY-panY)*.12;
+  if(warp>0)warp=Math.max(0,warp-0.008);
+
+  ctx.clearRect(0,0,W,H);
+
+  // starfield (warp streaks during intro)
+  for(const s of stars){
+    const sx=s.x*W,sy=s.y*H;
+    const a=.25+.5*Math.abs(Math.sin(s.tw+t*0.0006*s.sp));
+    ctx.fillStyle=`rgba(232,236,245,${a})`;
+    if(warp>0.02){
+      const dx=sx-CX,dy=sy-CY,len=warp*warp*90;
+      const d=Math.hypot(dx,dy)||1;
+      ctx.strokeStyle=`rgba(160,210,255,${a*warp})`;ctx.lineWidth=s.r*.8;
+      ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(sx+dx/d*len,sy+dy/d*len);ctx.stroke();
+    }else{
+      ctx.beginPath();ctx.arc(sx,sy,s.r,0,7);ctx.fill();
+    }
+  }
+  if(warp>0.4)return; // rings fade in after warp
+
+  const fade=Math.min(1,(0.4-warp)/0.3);
+  const minWH=Math.min(W,H);
+  const base=minWH*0.0465*zoom; // font/scale unit
+  const OX=CX+panX,OY=CY+panY; // camera origin (pan)
+  ctx.globalAlpha=fade;
+
+  // per-system telemetry totals (cheap: ~65 iterations)
+  let galMem=0,galCpu=0;
+  for(const ring of RINGS){ring.mem=0;ring.cpu=0;ring.alive=0;}
+  for(const b of bodies){
+    const m=b.live?b.live.mem:30,c=b.live?b.live.cpu:0;
+    b.ring.mem+=m;b.ring.cpu+=c;galMem+=m;galCpu+=c;
+    if(!(b.live?!b.live.running:b.dormant))b.ring.alive++;
+  }
+  BH.live={running:true,cpu:galCpu,mem:galMem,status:'devouring '+bodies.length+' bodies across '+RINGS.length+' systems',count:1};
+
+  // ===== BLACK HOLE — the Orange Pi singularity. Dominates its suns; size ∝ total RAM it devours =====
+  const bhR=(26+Math.sqrt(galMem||1500)*0.55)*zoom;
+  let g=ctx.createRadialGradient(OX,OY,bhR*0.4,OX,OY,bhR*2.6);
+  g.addColorStop(0,'rgba(255,158,100,0)');g.addColorStop(.45,'rgba(255,158,100,.5)');
+  g.addColorStop(.62,'rgba(181,140,255,.28)');g.addColorStop(1,'rgba(181,140,255,0)');
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(OX,OY,bhR*2.6,0,7);ctx.fill();
+  // accretion disk: tilted glowing ellipse, slowly precessing (Interstellar on a budget)
+  ctx.save();ctx.translate(OX,OY);ctx.rotate(-0.3+0.06*Math.sin(t*0.0002));
+  ctx.strokeStyle='rgba(255,170,110,.28)';ctx.lineWidth=bhR*0.5;
+  ctx.beginPath();ctx.ellipse(0,0,bhR*1.85,bhR*0.6,0,0,7);ctx.stroke();
+  ctx.strokeStyle='rgba(255,210,160,.5)';ctx.lineWidth=bhR*0.16;
+  ctx.beginPath();ctx.ellipse(0,0,bhR*1.7,bhR*0.5,0,0,7);ctx.stroke();
+  ctx.restore();
+  // event horizon + photon ring
+  ctx.fillStyle='#02030a';ctx.beginPath();ctx.arc(OX,OY,bhR,0,7);ctx.fill();
+  ctx.strokeStyle='rgba(255,225,190,.95)';ctx.lineWidth=Math.max(1.5,bhR*0.05);
+  ctx.beginPath();ctx.arc(OX,OY,bhR*1.04,0,7);ctx.stroke();
+  if(hovered===BH){
+    ctx.strokeStyle='rgba(255,158,100,.5)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.arc(OX,OY,bhR*1.35,0,7);ctx.stroke();
+  }
+  ctx.fillStyle='rgba(255,158,100,.9)';
+  ctx.font=`700 ${Math.max(10,bhR*.5)}px ui-monospace,monospace`;
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('π',OX,OY+1);
+  ctx.fillStyle='rgba(125,135,156,.8)';
+  ctx.font=`${Math.max(8,base*.15)}px ui-monospace,monospace`;
+  ctx.fillText('ORANGE PI · SINGULARITY',OX,OY+bhR*1.7+12);
+
+  // ===== STAR SYSTEMS — one sun per theme, orbiting the singularity =====
+  const hovPrev=hovered; // last frame's hover — used to freeze the planet under the cursor
+  hovered=null;
+  RINGS.forEach((ring,ri)=>{
+    if(ring.ux===undefined)layoutSystems(); // uncharted ring created at runtime
+    ring.sx=OX+ring.ux*minWH*zoom;
+    ring.sy=OY+ring.uy*minWH*zoom;
+    ring.sysR=minWH*zoom*ring.sysF;
+    // sun size ∝ RAM its planets consume
+    ring.sunR=Math.min(4+Math.sqrt(ring.mem)*0.3,14)*zoom;
+    // orbit guide fades in as you zoom into the system
+    const guideA=Math.max(0,Math.min(1,(zoom-0.9)*1.5));
+    if(guideA>0.02){
+      ctx.globalAlpha=fade*guideA*0.6;
+      ctx.strokeStyle=ring.color+'30';ctx.lineWidth=1;
+      ctx.beginPath();ctx.arc(ring.sx,ring.sy,ring.sysR,0,7);ctx.stroke();
+      ctx.globalAlpha=fade;
+    }
+    // the sun
+    let sg=ctx.createRadialGradient(ring.sx,ring.sy,0,ring.sx,ring.sy,ring.sunR*2.4);
+    sg.addColorStop(0,'#fff');sg.addColorStop(.3,ring.color);sg.addColorStop(1,ring.color+'00');
+    ctx.fillStyle=sg;ctx.beginPath();ctx.arc(ring.sx,ring.sy,ring.sunR*2.4,0,7);ctx.fill();
+    // label: always readable, does not shrink away at low zoom
+    ctx.fillStyle=ring.color;
+    ctx.font=`700 ${Math.max(11,base*.19)}px ui-monospace,monospace`;
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(ring.name,ring.sx,ring.sy+Math.max(ring.sunR*2.2,ring.sysR*Math.min(zoom,1))+14);
+    ctx.fillStyle='rgba(125,135,156,.9)';
+    ctx.font=`${Math.max(9,base*.13)}px ui-monospace,monospace`;
+    ctx.fillText(ring.n+' bodies · '+Math.round(ring.mem)+' MB',ring.sx,ring.sy+Math.max(ring.sunR*2.2,ring.sysR*Math.min(zoom,1))+28);
+  });
+
+  // ===== WHITE DWARF — the graveyard. Dead & dormant bodies migrate here =====
+  const wdX=OX+WD.ux*minWH*zoom,wdY=OY+WD.uy*minWH*zoom;
+  let graveN=0;for(const b of bodies)if((b.grave||0)>0.5)graveN++;
+  const wdR=Math.min(4+graveN*1.4,11)*zoom;
+  let wg=ctx.createRadialGradient(wdX,wdY,0,wdX,wdY,wdR*3);
+  wg.addColorStop(0,'#fff');wg.addColorStop(.25,'#dfe8ff');wg.addColorStop(1,'rgba(223,232,255,0)');
+  ctx.fillStyle=wg;ctx.beginPath();ctx.arc(wdX,wdY,wdR*3,0,7);ctx.fill();
+  ctx.fillStyle='rgba(125,135,156,.9)';
+  ctx.font=`${Math.max(8,base*.14)}px ui-monospace,monospace`;
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('WHITE DWARF · THE GRAVEYARD',wdX,wdY+wdR*3+10);
+  ctx.fillStyle='rgba(125,135,156,.55)';
+  ctx.font=`${Math.max(7,base*.11)}px ui-monospace,monospace`;
+  ctx.fillText(graveN?graveN+' bodies in mourning orbit':'no casualties — for now',wdX,wdY+wdR*3+23);
+
+  for(const b of bodies){
+    // orbital velocity scales with live CPU: busy containers visibly race their orbit
+    // hovering a planet freezes it — so you can actually click the fast ones
+    const boost=b.live&&b.live.running?1+Math.min(b.live.cpu,40)*0.15:1;
+    if(!reduced&&!selected&&b!==hovPrev)b.ang+=b.speed*16*boost*(b.parent?3:1);
+    const dead=b.live?!b.live.running:b.dormant;
+    // dying is a journey: ease out of home orbit into the graveyard (and back, on resurrection)
+    b.grave=Math.min(1,Math.max(0,(b.grave||0)+(dead?0.004:-0.012)));
+    const ring=b.ring,n=Math.max(ring.n-1,1);
+    let hx,hy;
+    if(b.parent){ // moon: orbits its parent planet
+      const pr=b.parent.drawR||4*zoom;
+      const R=pr*2.4+(b.moonIdx||0)*7*zoom;
+      hx=b.parent.x+Math.cos(b.ang)*R;hy=b.parent.y+Math.sin(b.ang)*R;
+    }else{
+      const R=ring.sysR*(0.45+0.55*(b.idx/n));
+      hx=ring.sx+Math.cos(b.ang)*R;hy=ring.sy+Math.sin(b.ang)*R;
+    }
+    if(b.grave>0.001){
+      const gR=minWH*zoom*(0.045+0.02*(b.idx%4));
+      const gx=wdX+Math.cos(b.ang*0.5+b.idx)*gR,gy=wdY+Math.sin(b.ang*0.5+b.idx)*gR;
+      const e=b.grave*b.grave*(3-2*b.grave);
+      b.x=hx+(gx-hx)*e;b.y=hy+(gy-hy)*e;
+    }else{b.x=hx;b.y=hy;}
+    // LOD: from afar only heavyweight planets (and the dead, they matter) — zoom reveals the rest
+    const mem=b.live?b.live.mem:30;
+    b.vis=dead?1:Math.max(0,Math.min(1,(zoom-(1.5-Math.min(Math.sqrt(mem)*0.06,1.1)))*2.5));
+    if(b.parent&&!dead)b.vis=Math.min(b.vis,Math.max(0,Math.min(1,(zoom-1.3)*2.5))); // moons need a closer look
+    if(b.vis<0.4)continue;
+    const d=Math.hypot(mouse.x-b.x,mouse.y-b.y);
+    if(d<14&&(!hovered||d<hovered._d)){hovered=b;b._d=d;}
+  }
+  // suns and the singularity are hoverable/clickable too
+  if(!hovered){
+    for(const ring of RINGS){
+      if(Math.hypot(mouse.x-ring.sx,mouse.y-ring.sy)<Math.max(ring.sunR*1.6,14)){
+        if(!ring.sb)ring.sb={star:true,ring};
+        ring.sb.name=ring.name;ring.sb.x=ring.sx;ring.sb.y=ring.sy;
+        ring.sb.desc=STARLORE[ring.name]||'A sun of the KITTLERVERSE.';
+        ring.sb.live={running:ring.alive===ring.n,mem:ring.mem,cpu:ring.cpu,
+          status:ring.alive+'/'+ring.n+' planets in stable orbit',count:1};
+        hovered=ring.sb;break;
+      }
+    }
+  }
+  if(!hovered&&Math.hypot(mouse.x-OX,mouse.y-OY)<bhR*1.15){BH.x=OX;BH.y=OY;hovered=BH;}
+
+  for(const b of bodies){
+    if(!b.vis||b.vis<0.02)continue;
+    ctx.globalAlpha=fade*b.vis;
+    const hot=b===hovered||b===selected;
+    const dead=b.live?!b.live.running:b.dormant;
+    let baseR=b.live?Math.min(1.8+Math.sqrt(Math.max(b.live.mem,1))*0.32,8):b.r*0.6;
+    if(b.parent)baseR*=0.6; // moons are moons
+    b.drawR=baseR*zoom;
+    const r=b.drawR*(hot?1.7:1);
+    const col=dead?'#ff6b6b':b.col;
+    if(b.live&&b.live.running){ // newborn glow: freshly (re)started containers burn white for their first day
+      if(b.live.age===undefined)b.live.age=parseAge(b.live.status);
+      if(b.live.age<24){
+        ctx.fillStyle='rgba(255,255,255,'+(0.35*(1-b.live.age/24))+')';
+        ctx.beginPath();ctx.arc(b.x,b.y,r*2.1,0,7);ctx.fill();
+      }
+    }
+    if(b.live&&b.live.cpu>=20&&!dead){ // Saturn rings are earned: 20%+ CPU only
+      const heat=Math.min(b.live.cpu/80,1);
+      ctx.save();ctx.translate(b.x,b.y);ctx.rotate(b.rtilt);
+      ctx.strokeStyle='rgba(255,220,170,'+(0.35+heat*0.55)+')';
+      ctx.lineWidth=Math.max(1,r*0.22);
+      ctx.beginPath();ctx.ellipse(0,0,r*(1.7+heat*0.9),r*(0.55+heat*0.3),0,0,7);ctx.stroke();
+      if(b.live.cpu>=40){ // second ring for the truly possessed
+        ctx.strokeStyle='rgba(255,220,170,'+(0.2+heat*0.3)+')';
+        ctx.lineWidth=Math.max(1,r*0.12);
+        ctx.beginPath();ctx.ellipse(0,0,r*(2.2+heat*1.1),r*(0.72+heat*0.38),0,0,7);ctx.stroke();
+      }
+      ctx.restore();
+    }
+    if(hot){
+      ctx.fillStyle=col+'33';ctx.beginPath();ctx.arc(b.x,b.y,r*2.6,0,7);ctx.fill();
+    }
+    let bg=ctx.createRadialGradient(b.x-r*.3,b.y-r*.3,r*.1,b.x,b.y,r);
+    bg.addColorStop(0,'#fff');bg.addColorStop(.35,col);bg.addColorStop(1,col+'55');
+    ctx.fillStyle=bg;ctx.beginPath();ctx.arc(b.x,b.y,r,0,7);ctx.fill();
+    if(dead){ // dead/dormant body: dim + slow blink
+      const blink=.4+.4*Math.sin(t*.003);
+      ctx.fillStyle=`rgba(5,7,15,${.65-blink*.3})`;
+      ctx.beginPath();ctx.arc(b.x,b.y,r,0,7);ctx.fill();
+    }
+    if(hot||zoom>1.7){
+      ctx.fillStyle='#e8ecf5';
+      ctx.font=`${Math.max(9,base*.19)}px ui-monospace,monospace`;
+      ctx.textAlign='center';
+      ctx.fillText(b.name,b.x,b.y-r-7);
+    }
+  }
+  ctx.globalAlpha=1;
+
+  // tooltip
+  if(hovered&&!dragging){
+    cv.style.cursor='pointer';
+    tip.style.display='block';
+    tip.innerHTML='<div class="nm">'+hovered.name+'</div>'
+      +'<div class="cat" style="color:'+hovered.ring.color+'">'+hovered.ring.name+'</div>'
+      +'<div class="ds">'+hovered.desc+'</div>'
+      +'<div class="st" style="color:'+((hovered.live?!hovered.live.running:hovered.dormant)?'var(--red)':'var(--green)')+'">'
+      +(hovered.live?(hovered.live.running
+          ?'● '+hovered.live.status.toLowerCase()+' · '+hovered.live.mem.toFixed(0)+' MB · cpu '+hovered.live.cpu.toFixed(1)+'%'
+          :'● ADRIFT — '+hovered.live.status.toLowerCase())
+        :(hovered.dormant?'● dormant':'● stable orbit'))+'</div>';
+    const tw=tip.offsetWidth,th=tip.offsetHeight;
+    tip.style.left=Math.min(W-tw-12,hovered.x+16)+'px';
+    tip.style.top=Math.max(10,Math.min(H-th-12,hovered.y-th/2))+'px';
+  }else{
+    cv.style.cursor=dragging?'grabbing':'crosshair';
+    tip.style.display='none';
+  }
+}
+requestAnimationFrame(frame);
+</script>
