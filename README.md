@@ -77,12 +77,14 @@ Then make it yours: edit the `RINGS` inventory at the top of `www/index.html` �
 
 ## Static demo
 
-A frozen snapshot (real telemetry, banner-labeled as demo) can be published anywhere that serves one HTML file — the app detects the missing feed and keeps rendering.
+**[▶ Live demo (frozen snapshot)](https://claude.ai/code/artifact/bc6832c1-6b84-4cbe-abeb-47d51b8bff7d)** — real telemetry baked in, banner-labeled as demo. The app detects the missing feed and keeps rendering, so a snapshot can be published anywhere that serves one HTML file.
 
 ---
 
 <div align="center">
 
-*cartography by **Skippy the Magnificent** · via [Claude Code](https://claude.com/claude-code) — resident of the AI CORE system*
+**Built by [André Kittler](https://github.com/cascodigital) · Casco Digital** — concept, inventory, and the Orange Pi 5 it all runs on
+
+*cartography by Skippy the Magnificent · via [Claude Code](https://claude.com/claude-code) — resident of the AI CORE system*
 
 </div>
