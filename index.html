@@ -10,7 +10,7 @@
        font-family:ui-monospace,'Cascadia Code','JetBrains Mono',Menlo,Consolas,monospace;
        overflow:hidden}
   canvas{display:block;position:fixed;inset:0;cursor:crosshair}
-  .hud{position:fixed;pointer-events:none;z-index:5}
+  .hud{position:fixed;pointer-events:none;z-index:5;transform:translate(var(--hud-x,0),var(--hud-y,0));transition:transform 2s ease}
   #title{top:22px;left:26px}
   #title h1{margin:0;font-size:clamp(18px,2.6vw,30px);font-weight:700;letter-spacing:.35em;color:var(--ink);
     text-shadow:0 0 18px rgba(110,231,255,.5)}
@@ -45,10 +45,10 @@
   #tip .st{font-size:9px;letter-spacing:.15em;margin-top:8px;text-transform:uppercase}
 
   /* dossier panel */
-  #panel{position:fixed;z-index:8;top:0;right:0;height:100%;width:min(340px,86vw);
-         background:rgba(6,9,18,.94);border-left:1px solid rgba(110,231,255,.25);
-         transform:translateX(105%);transition:transform .35s cubic-bezier(.2,.8,.2,1);
-         padding:80px 26px 26px;box-sizing:border-box;backdrop-filter:blur(6px)}
+	  #panel{position:fixed;z-index:8;top:0;right:0;height:100%;width:min(430px,92vw);
+	         background:rgba(6,9,18,.94);border-left:1px solid rgba(110,231,255,.25);
+	         transform:translateX(105%);transition:transform .35s cubic-bezier(.2,.8,.2,1);
+	         padding:80px 26px 26px;box-sizing:border-box;backdrop-filter:blur(6px);overflow:auto}
   #panel.open{transform:none}
   #panel .close{position:absolute;top:26px;right:22px;background:none;border:1px solid var(--dim);color:var(--dim);
         font:inherit;font-size:11px;padding:4px 10px;cursor:pointer;letter-spacing:.15em}
@@ -57,9 +57,21 @@
   #panel h2{margin:8px 0 2px;font-size:22px;letter-spacing:.04em;color:var(--ink);word-break:break-all}
   #panel .cat{font-size:10px;letter-spacing:.2em;text-transform:uppercase}
   #panel .ds{font-size:12.5px;line-height:1.7;color:var(--ink);margin-top:18px;border-top:1px solid rgba(125,135,156,.25);padding-top:16px}
-  #panel dl{margin:22px 0 0;font-size:11px;line-height:2;letter-spacing:.05em}
-  #panel dt{color:var(--dim);text-transform:uppercase;font-size:9px;letter-spacing:.22em;margin-top:10px}
-  #panel dd{margin:0;color:var(--ink)}
+	  #panel dl{margin:22px 0 0;font-size:11px;line-height:2;letter-spacing:.05em}
+	  #panel dt{color:var(--dim);text-transform:uppercase;font-size:9px;letter-spacing:.22em;margin-top:10px}
+	  #panel dd{margin:0;color:var(--ink)}
+	  #actions{display:none;margin-top:18px;border-top:1px solid rgba(125,135,156,.25);padding-top:14px}
+	  #actions .row{display:flex;gap:8px;flex-wrap:wrap}
+	  #actions button{background:rgba(110,231,255,.08);border:1px solid rgba(110,231,255,.35);
+	    color:var(--cyan);font:inherit;font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+	    padding:7px 10px;cursor:pointer}
+	  #actions button.danger{border-color:rgba(255,107,107,.55);color:var(--red);background:rgba(255,107,107,.08)}
+	  #actions button.warn{border-color:rgba(255,158,100,.55);color:var(--orange);background:rgba(255,158,100,.08)}
+	  #actions button:disabled{opacity:.35;cursor:not-allowed}
+	  #ctlmsg{min-height:16px;margin-top:10px;color:var(--dim);font-size:10px;letter-spacing:.08em;line-height:1.5}
+	  #logs{display:none;margin-top:12px;max-height:280px;overflow:auto;white-space:pre-wrap;word-break:break-word;
+	    background:rgba(2,3,10,.72);border:1px solid rgba(125,135,156,.25);padding:10px;
+	    color:#cfd6e6;font-size:10px;line-height:1.45}
   @media (prefers-reduced-motion:reduce){
     #hint{animation:none}
     #panel{transition:none}
@@ -84,6 +96,7 @@
     <span>↻ orbit speed · live CPU load</span>
     <span>◐ saturn rings · CPU ≥ 20% (double ≥ 40%)</span>
     <span class="rd">● dead &amp; dormant migrate to the white dwarf</span>
+    <span class="rd">✹ supernova · OOM, unhealthy, restart loop or failed critical probe</span>
     <span>☽ moons · support containers (db, cron, redis)</span>
     <span>○ white glow · (re)started in the last 24 h</span>
     <span>⨀ closer to the hole · bigger system</span>
@@ -99,13 +112,23 @@
   <h2 id="pname"></h2>
   <div class="cat" id="pcat"></div>
   <div class="ds" id="pdesc"></div>
-  <dl>
-    <dt id="dtimg">image</dt><dd id="pimg"></dd>
-    <dt>status</dt><dd id="pstat"></dd>
-    <dt>star system</dt><dd id="pring"></dd>
-    <dt>telemetry</dt><dd id="ptel">—</dd>
-  </dl>
-</aside>
+	  <dl>
+	    <dt id="dtimg">image</dt><dd id="pimg"></dd>
+	    <dt>status</dt><dd id="pstat"></dd>
+	    <dt>star system</dt><dd id="pring"></dd>
+	    <dt>telemetry</dt><dd id="ptel">—</dd>
+	  </dl>
+	  <div id="actions">
+	    <div class="row">
+	      <button id="actstart">START</button>
+	      <button id="actstop" class="danger">STOP</button>
+	      <button id="actrestart" class="warn">RESTART</button>
+	      <button id="actlogs">LOGS</button>
+	    </div>
+	    <div id="ctlmsg"></div>
+	    <pre id="logs"></pre>
+	  </div>
+	</aside>
 
 <canvas id="cv"></canvas>
 
@@ -157,6 +180,8 @@ const RINGS = [
   ['flaresolverr','flaresolverr','Cloudflare-challenge negotiator for the scraper above.',0,'hmobrss_flaresolverr'],
   ['mercury','mercury-parser-api','Strips web pages to pure text. No ads survive.'],
   ['libretranslate','libretranslate','Self-hosted translation engine. The UN interpreter of the stack.'],
+  ['calibre-web','linuxserver/calibre-web','Personal library and OPDS shelf for every reading device.'],
+  ['kosync','koreader/kosync','Keeps reading position aligned across Kindle, Android and Linux.'],
  ]},
  {name:'BUSINESS OPS', color:'#ffd166', bodies:[
   ['glpi','glpi-glpi','ITSM helpdesk. Real tickets, real clients, real SLAs.'],
@@ -187,7 +212,7 @@ const RINGS = [
 
 // ============ SCENE ============
 const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
-const DPR=Math.min(devicePixelRatio||1,2);
+const DPR=location.hash==='#kiosk'?1:Math.min(devicePixelRatio||1,2);
 let W,H,CX,CY;
 function resize(){W=innerWidth;H=innerHeight;cv.width=W*DPR;cv.height=H*DPR;
   cv.style.width=W+'px';cv.style.height=H+'px';ctx.setTransform(DPR,0,0,DPR,0,0);
@@ -199,6 +224,16 @@ const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 // stars
 const stars=[];for(let i=0;i<420;i++){stars.push({x:Math.random(),y:Math.random(),
   r:Math.random()*1.3+.3,tw:Math.random()*6.28,sp:.5+Math.random()*2});}
+const starLayer=document.createElement('canvas'),starCtx=starLayer.getContext('2d');
+function buildStarLayer(){
+  starLayer.width=W*DPR;starLayer.height=H*DPR;
+  starCtx.setTransform(DPR,0,0,DPR,0,0);starCtx.clearRect(0,0,W,H);
+  for(const s of stars){
+    starCtx.fillStyle=`rgba(232,236,245,${.35+.35*Math.abs(Math.sin(s.tw))})`;
+    starCtx.beginPath();starCtx.arc(s.x*W,s.y*H,s.r,0,7);starCtx.fill();
+  }
+}
+addEventListener('resize',buildStarLayer);buildStarLayer();
 
 // bodies — each theme is a star system: planets orbit their sun, suns orbit the black hole
 // planets get their own colors — a system is a family, not a uniform
@@ -273,7 +308,7 @@ RINGS.forEach(r=>{r.planets=r.bodies.map(b=>b[0]);});
 
 // moons: support containers orbit their parent planet, not the sun (compose hierarchy → orbital hierarchy)
 const MOONS={'glpi-db':'glpi','glpi-cron':'glpi','ninja-web':'ninja-app','ninja-db':'ninja-app',
-             'ninja-redis':'ninja-app','ttrss_postgres':'ttrss','flaresolverr':'hmobrss'};
+             'ninja-redis':'ninja-app','ttrss_postgres':'ttrss','flaresolverr':'hmobrss','kosync':'calibre-web'};
 {const mi={};
  bodies.forEach(b=>{
   const pn=MOONS[b.name];
@@ -302,30 +337,128 @@ let zoom=1,targetZoom=1,panX=0,panY=0,targetPanX=0,targetPanY=0;
 let dragging=false,lastX=0,lastY=0,downX=0,downY=0;
 let hovered=null,selected=null;
 const mouse={x:-999,y:-999};
+let hoverActiveUntil=0;
+const wakeHover=()=>{hoverActiveUntil=performance.now()+30000;};
+const kioskMode=location.hash==='#kiosk';
+document.documentElement.dataset.kiosk=kioskMode?'on':'off';
+let kioskNextAt=performance.now()+8000,kioskIndex=-1,kioskPoolKey='',kioskPausedUntil=0;
+const pauseKiosk=()=>{if(kioskMode)kioskPausedUntil=performance.now()+120000;};
+function setKioskCamera(ring){
+  const z=ring?1.75:1;
+  const tx=ring?-ring.ux*Math.min(W,H)*z:0;
+  const ty=ring?-ring.uy*Math.min(W,H)*z:0;
+  cv.style.transform=`translate(${tx}px,${ty}px) scale(${z})`;
+  document.documentElement.dataset.kioskFocus=ring?ring.name:'OVERVIEW';
+}
+function updateKioskCamera(t){
+  if(!kioskMode||selected||dragging||t<kioskPausedUntil)return;
+  const alerts=RINGS.filter(r=>(SEV[r.alert]||0)>0);
+  const pool=alerts.length?alerts:[null,...RINGS];
+  const key=alerts.length?'alerts:'+alerts.map(r=>r.name).join('|'):'tour';
+  if(key!==kioskPoolKey){kioskPoolKey=key;kioskIndex=-1;kioskNextAt=t;}
+  if(t<kioskNextAt)return;
+  kioskIndex=(kioskIndex+1)%pool.length;
+  setKioskCamera(pool[kioskIndex]);
+  document.documentElement.dataset.kioskAlert=alerts.length?'on':'off';
+  kioskNextAt=t+45000;
+}
+
+if(kioskMode){
+  cv.style.transformOrigin='center center';
+  cv.style.transition='transform 4.5s cubic-bezier(.22,.61,.36,1)';
+  const shifts=[[0,0],[2,-2],[-2,2],[3,1],[-1,-3]];
+  let shiftIndex=0;
+  setInterval(()=>{
+    shiftIndex=(shiftIndex+1)%shifts.length;
+    document.documentElement.style.setProperty('--hud-x',shifts[shiftIndex][0]+'px');
+    document.documentElement.style.setProperty('--hud-y',shifts[shiftIndex][1]+'px');
+  },10*60*1000);
+}
 
 cv.addEventListener('wheel',e=>{e.preventDefault();
+  wakeHover();pauseKiosk();
   const z0=targetZoom;
   targetZoom=Math.max(.5,Math.min(6,targetZoom*(e.deltaY<0?1.14:0.88)));
   const k=targetZoom/z0; // keep the point under the cursor fixed while zooming
   targetPanX=(e.clientX-CX)-((e.clientX-CX)-targetPanX)*k;
   targetPanY=(e.clientY-CY)-((e.clientY-CY)-targetPanY)*k;
 },{passive:false});
-cv.addEventListener('pointerdown',e=>{dragging=true;lastX=downX=e.clientX;lastY=downY=e.clientY;cv.setPointerCapture(e.pointerId);});
+cv.addEventListener('pointerdown',e=>{wakeHover();pauseKiosk();mouse.x=e.clientX;mouse.y=e.clientY;dragging=true;lastX=downX=e.clientX;lastY=downY=e.clientY;cv.setPointerCapture(e.pointerId);});
 cv.addEventListener('pointerup',e=>{
   dragging=false;
   if(Math.hypot(e.clientX-downX,e.clientY-downY)<5){ if(hovered){select(hovered);} else {closePanel();} }
 });
 cv.addEventListener('pointermove',e=>{
+  if(Math.hypot(e.clientX-mouse.x,e.clientY-mouse.y)>1)wakeHover();
   mouse.x=e.clientX;mouse.y=e.clientY;
   if(dragging){targetPanX+=e.clientX-lastX;targetPanY+=e.clientY-lastY;lastX=e.clientX;lastY=e.clientY;}
 });
 cv.addEventListener('pointerleave',()=>{mouse.x=-999;hovered=null;tip.style.display='none';});
 
-// panel
-const panel=document.getElementById('panel'),tip=document.getElementById('tip');
-function select(b){
-  selected=b;
-  if(b.star){ // star dossier: what the system is + its worlds
+	// panel
+	const panel=document.getElementById('panel'),tip=document.getElementById('tip');
+	const actions=document.getElementById('actions'),ctlmsg=document.getElementById('ctlmsg'),logsBox=document.getElementById('logs');
+	const CONTROL_API=(location.protocol==='file:')?null:((location.port==='8096')?(location.protocol+'//'+location.hostname+':8097'):'');
+	let actionTarget=null;
+	function controlAllowed(b){
+	  return !!(b&&b.live&&!b.star&&!b.bh&&b.live.count===1&&b.name.indexOf('×')<0);
+	}
+	function setCtl(msg,color){
+	  ctlmsg.textContent=msg||'';
+	  ctlmsg.style.color=color||'var(--dim)';
+	}
+	function wireActions(b){
+	  actionTarget=controlAllowed(b)?b:null;
+	  logsBox.style.display='none';logsBox.textContent='';
+	  setCtl(actionTarget?'control channel ready':'control disabled for this body');
+	  actions.style.display=(b&&!b.star&&!b.bh)?'block':'none';
+	  const running=!!(actionTarget&&actionTarget.live&&actionTarget.live.running);
+	  document.getElementById('actstart').disabled=!actionTarget||running;
+	  document.getElementById('actstop').disabled=!actionTarget||!running;
+	  document.getElementById('actrestart').disabled=!actionTarget;
+	  document.getElementById('actlogs').disabled=!actionTarget;
+	}
+	async function controlFetch(path,opts){
+	  if(CONTROL_API===null)throw new Error('control API unavailable');
+	  const r=await fetch(CONTROL_API+path,Object.assign({cache:'no-store'},opts||{}));
+	  const data=await r.json().catch(()=>({ok:false,error:'invalid_json'}));
+	  if(!r.ok||!data.ok)throw new Error(data.error||data.detail||('HTTP '+r.status));
+	  return data;
+	}
+	async function runAction(action){
+	  const b=actionTarget;
+	  if(!b)return;
+	  if((action==='stop'||action==='restart')&&!confirm(action.toUpperCase()+' '+b.name+'?'))return;
+	  setCtl(action+' in progress...','var(--orange)');
+	  try{
+	    const data=await controlFetch('/containers/'+encodeURIComponent(b.name)+'/'+action,{method:'POST'});
+	    setCtl(data.action+' ok · docker '+data.docker_status,'var(--green)');
+	    setTimeout(poll,1200);
+	  }catch(e){
+	    setCtl(action+' failed · '+e.message,'var(--red)');
+	  }
+	}
+	async function loadLogs(){
+	  const b=actionTarget;
+	  if(!b)return;
+	  logsBox.style.display='block';logsBox.textContent='loading logs...';
+	  setCtl('fetching last 200 log lines...');
+	  try{
+	    const data=await controlFetch('/containers/'+encodeURIComponent(b.name)+'/logs?tail=200');
+	    logsBox.textContent=data.logs||'(no logs returned)';
+	    setCtl('logs loaded','var(--green)');
+	  }catch(e){
+	    logsBox.textContent='logs failed: '+e.message;
+	    setCtl('logs failed · '+e.message,'var(--red)');
+	  }
+	}
+	document.getElementById('actstart').addEventListener('click',()=>runAction('start'));
+	document.getElementById('actstop').addEventListener('click',()=>runAction('stop'));
+	document.getElementById('actrestart').addEventListener('click',()=>runAction('restart'));
+	document.getElementById('actlogs').addEventListener('click',loadLogs);
+	function select(b){
+	  selected=b;
+	  if(b.star){ // star dossier: what the system is + its worlds
     const r=b.ring;
     document.getElementById('pname').textContent=r.name;
     const pc=document.getElementById('pcat');pc.textContent='home star · '+r.n+' planets';pc.style.color=r.color;
@@ -333,13 +466,16 @@ function select(b){
     document.getElementById('dtimg').textContent='planets';
     document.getElementById('pimg').textContent=(r.planets||[]).join(' · ')||'—';
     const ps=document.getElementById('pstat');
-    ps.textContent=r.alive+' of '+r.n+' planets in stable orbit';
-    ps.style.color=r.alive===r.n?'var(--green)':'var(--red)';
+    const alarm=r.alert&&r.alert!=='ok';
+    ps.textContent=alarm?('SUPERNOVA WATCH — '+r.alert.toUpperCase()):(r.alive+' of '+r.n+' planets in stable orbit');
+    ps.style.color=alarm||r.alive!==r.n?'var(--red)':'var(--green)';
     document.getElementById('pring').textContent='Sun — its size tracks the combined RAM of its worlds';
-    document.getElementById('ptel').textContent=Math.round(r.mem)+' MB RAM · '+r.cpu.toFixed(1)+'% CPU across the system';
-    panel.classList.add('open');panel.setAttribute('aria-hidden','false');
-    return;
-  }
+	    document.getElementById('ptel').textContent=Math.round(r.mem)+' MB RAM · '+r.cpu.toFixed(1)+'% CPU across the system'
+	      +(r.alerts?' · '+r.alerts+' active alert'+(r.alerts>1?'s':''):'');
+	    wireActions(null);
+	    panel.classList.add('open');panel.setAttribute('aria-hidden','false');
+	    return;
+	  }
   document.getElementById('dtimg').textContent='image';
   document.getElementById('pname').textContent=b.name;
   const pc=document.getElementById('pcat');pc.textContent=b.ring.name;pc.style.color=b.ring.color;
@@ -347,18 +483,24 @@ function select(b){
   document.getElementById('pimg').textContent=b.img;
   const ps=document.getElementById('pstat');
   const dead=b.live?!b.live.running:b.dormant;
-  ps.textContent=b.live?(b.live.running?'STABLE ORBIT — '+b.live.status:'ADRIFT — '+b.live.status)
-    :(b.dormant?'DORMANT — wakes on schedule, exits 0':'STABLE ORBIT — up and healthy');
-  ps.style.color=dead?'var(--red)':'var(--green)';
+  const alarm=alertLabel(b.live);
+  ps.textContent=alarm?('ALERT — '+alarm):(b.live?(b.live.running?'STABLE ORBIT — '+b.live.status:'ADRIFT — '+b.live.status)
+    :(b.dormant?'DORMANT — wakes on schedule, exits 0':'STABLE ORBIT — up and healthy'));
+  ps.style.color=alarm||dead?'var(--red)':'var(--green)';
   document.getElementById('pring').textContent=b.bh
     ?'Galactic center — all '+RINGS.length+' systems orbit it'
     :'System '+(b.ri+1)+' of '+RINGS.length+' — orbiting the '+b.ring.name+' star';
-  document.getElementById('ptel').textContent=b.live
-    ?(b.live.mem.toFixed(1)+' MB RAM · '+b.live.cpu.toFixed(2)+'% CPU'+(b.live.count>1?' ('+b.live.count+' containers)':''))
-    :'no live feed (static chart)';
-  panel.classList.add('open');panel.setAttribute('aria-hidden','false');
-}
-function closePanel(){selected=null;panel.classList.remove('open');panel.setAttribute('aria-hidden','true');}
+	  document.getElementById('ptel').textContent=b.live
+	    ?(b.live.mem.toFixed(1)+' MB RAM · '+b.live.cpu.toFixed(2)+'% CPU'
+	      +(b.live.health&&b.live.health!=='none'?' · health '+b.live.health:'')
+      +(b.live.restart?' · restarts '+b.live.restart:'')
+      +(b.live.oom?' · OOM killed':'')
+	      +(b.live.count>1?' ('+b.live.count+' containers)':''))
+	    :'no live feed (static chart)';
+	  wireActions(b);
+	  panel.classList.add('open');panel.setAttribute('aria-hidden','false');
+	}
+	function closePanel(){selected=null;actionTarget=null;panel.classList.remove('open');panel.setAttribute('aria-hidden','true');}
 document.getElementById('pclose').addEventListener('click',closePanel);
 const legend=document.getElementById('legend'),legbtn=document.getElementById('legbtn');
 legbtn.addEventListener('click',()=>{
@@ -372,7 +514,14 @@ addEventListener('keydown',e=>{if(e.key==='Escape')closePanel();});
 // ============ LIVE TELEMETRY ============
 // Served next to this file by galaxy-poller on the mothership.
 // On claude.ai (CSP) or file:// the fetch fails and we stay in static-map mode.
-let liveTs=null;
+let liveTs=null,alertSummary={critical:0,warn:0};
+const SEV={ok:0,warn:1,down:2,critical:3};
+function worse(a,b){return (SEV[b]||0)>(SEV[a]||0)?b:a;}
+function bodyAlert(b){return (b.dormant?'ok':((b.live&&b.live.alert)||'ok'));}
+function alertLabel(live){
+  if(!live||!live.alert||live.alert==='ok')return '';
+  return live.alert.toUpperCase()+(live.reason?' — '+live.reason:'');
+}
 function applyLive(data){
   const entries=data.containers.slice();
   const claimed=new Set();
@@ -381,11 +530,28 @@ function applyLive(data){
     if(!mine.length) mine=entries.filter(e=>e.name.startsWith(b.match)&&!claimed.has(e.name));
     if(mine.length){
       mine.forEach(e=>claimed.add(e.name));
+      const alert=mine.reduce((a,e)=>worse(a,e.alert||'ok'),'ok');
+      const reason=(mine.find(e=>(e.alert||'ok')===alert&&e.reason)||mine.find(e=>e.reason)||{}).reason||'';
+      const health=(mine.find(e=>e.health&&e.health!=='none')||{}).health||'none';
       b.live={running:mine.every(e=>e.state==='running'),
               cpu:mine.reduce((a,e)=>a+e.cpu,0),
               mem:mine.reduce((a,e)=>a+e.mem,0),
-              status:mine[0].status,count:mine.length};
+              status:mine[0].status,count:mine.length,alert,reason,health,
+              restart:mine.reduce((a,e)=>a+(e.restart||0),0),
+              oom:mine.some(e=>e.oom),exit:mine[0].exit||0};
       if(b.live.running){ b.drift=0; } 
+    }
+  }
+  if(Array.isArray(data.services)){
+    for(const svc of data.services){
+      const target=bodies.find(b=>b.name===svc.target||b.match===svc.target);
+      if(!target)continue;
+      if(!target.live)target.live={running:false,cpu:0,mem:0,status:'probe target missing',count:0,alert:'critical',reason:'missing '+svc.target};
+      if((SEV[svc.alert]||0)>(SEV[target.live.alert]||0)){
+        target.live.alert=svc.alert;
+        target.live.reason=svc.name+': '+svc.detail;
+      }
+      target.live.services=(target.live.services||[]).concat(svc);
     }
   }
   // uncharted: containers not in the map get their own outer ring
@@ -403,14 +569,25 @@ function applyLive(data){
          col:PCOLS[ring.n%PCOLS.length],rtilt:(ring.n%10)/10*Math.PI};
       bodies.push(b);
     }
-    b.live={running:e.state==='running',cpu:e.cpu,mem:e.mem,status:e.status,count:1};
+    b.live={running:e.state==='running',cpu:e.cpu,mem:e.mem,status:e.status,count:1,
+      alert:e.alert||'ok',reason:e.reason||'',health:e.health||'none',restart:e.restart||0,oom:!!e.oom,exit:e.exit||0};
   }
   liveTs=new Date(data.ts);
   const up=entries.filter(e=>e.state==='running').length;
+  alertSummary={critical:0,warn:0};
+  for(const b of bodies){
+    const a=bodyAlert(b);
+    if(a==='critical'||a==='down')alertSummary.critical++;
+    else if(a==='warn')alertSummary.warn++;
+  }
   document.getElementById('cnum').textContent=entries.length;
   document.getElementById('sline').textContent=up+' up · '+(entries.length-up)+' down';
-  document.getElementById('live').innerHTML=
-    '<span style="color:var(--green)">● LIVE TELEMETRY</span><br>synced '+liveTs.toLocaleTimeString();
+  const alertText=alertSummary.critical
+    ? '<span style="color:var(--red)">✹ '+alertSummary.critical+' critical alert'+(alertSummary.critical>1?'s':'')+'</span>'
+    : (alertSummary.warn?'<span style="color:var(--orange)">◆ '+alertSummary.warn+' warning'+(alertSummary.warn>1?'s':'')+'</span>'
+      : '<span style="color:var(--green)">● LIVE TELEMETRY</span>');
+  document.getElementById('live').innerHTML=alertText+'<br>synced '+liveTs.toLocaleTimeString();
+  if(kioskMode)lastDrawAt=0;
 }
 async function poll(){
   try{const r=await fetch('telemetry.json',{cache:'no-store'});
@@ -419,29 +596,39 @@ async function poll(){
 poll();setInterval(poll,60000);
 
 // warp intro
-let warp=(reduced||location.hash==='#still')?0:1;
+let warp=(reduced||location.hash==='#still'||kioskMode)?0:1;
+let lastDrawAt=0;
 
 function frame(t){
-  requestAnimationFrame(frame);
-  zoom+=(targetZoom-zoom)*.08;
-  panX+=(targetPanX-panX)*.12;
-  panY+=(targetPanY-panY)*.12;
+  if(!kioskMode)requestAnimationFrame(frame);
+  updateKioskCamera(t);
+  const frameScale=lastDrawAt?Math.min((t-lastDrawAt)/(1000/60),6):1;
+  lastDrawAt=t;
+  const zoomEase=1-Math.pow(1-(kioskMode?.02:.08),frameScale);
+  const panEase=1-Math.pow(1-(kioskMode?.03:.12),frameScale);
+  zoom+=(targetZoom-zoom)*zoomEase;
+  panX+=(targetPanX-panX)*panEase;
+  panY+=(targetPanY-panY)*panEase;
   if(warp>0)warp=Math.max(0,warp-0.008);
 
   ctx.clearRect(0,0,W,H);
 
   // starfield (warp streaks during intro)
-  for(const s of stars){
-    const sx=s.x*W,sy=s.y*H;
-    const a=.25+.5*Math.abs(Math.sin(s.tw+t*0.0006*s.sp));
-    ctx.fillStyle=`rgba(232,236,245,${a})`;
-    if(warp>0.02){
-      const dx=sx-CX,dy=sy-CY,len=warp*warp*90;
-      const d=Math.hypot(dx,dy)||1;
-      ctx.strokeStyle=`rgba(160,210,255,${a*warp})`;ctx.lineWidth=s.r*.8;
-      ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(sx+dx/d*len,sy+dy/d*len);ctx.stroke();
-    }else{
-      ctx.beginPath();ctx.arc(sx,sy,s.r,0,7);ctx.fill();
+  if(kioskMode){
+    ctx.drawImage(starLayer,0,0,W,H);
+  }else{
+    for(const s of stars){
+      const sx=s.x*W,sy=s.y*H;
+      const a=.25+.5*Math.abs(Math.sin(s.tw+t*0.0006*s.sp));
+      ctx.fillStyle=`rgba(232,236,245,${a})`;
+      if(warp>0.02){
+        const dx=sx-CX,dy=sy-CY,len=warp*warp*90;
+        const d=Math.hypot(dx,dy)||1;
+        ctx.strokeStyle=`rgba(160,210,255,${a*warp})`;ctx.lineWidth=s.r*.8;
+        ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(sx+dx/d*len,sy+dy/d*len);ctx.stroke();
+      }else{
+        ctx.beginPath();ctx.arc(sx,sy,s.r,0,7);ctx.fill();
+      }
     }
   }
   if(warp>0.4)return; // rings fade in after warp
@@ -454,11 +641,13 @@ function frame(t){
 
   // per-system telemetry totals (cheap: ~65 iterations)
   let galMem=0,galCpu=0;
-  for(const ring of RINGS){ring.mem=0;ring.cpu=0;ring.alive=0;}
+  for(const ring of RINGS){ring.mem=0;ring.cpu=0;ring.alive=0;ring.alert='ok';ring.alerts=0;}
   for(const b of bodies){
     const m=b.live?b.live.mem:30,c=b.live?b.live.cpu:0;
     b.ring.mem+=m;b.ring.cpu+=c;galMem+=m;galCpu+=c;
     if(!(b.live?!b.live.running:b.dormant))b.ring.alive++;
+    const a=bodyAlert(b);
+    if(a!=='ok'){b.ring.alert=worse(b.ring.alert,a);b.ring.alerts++;}
   }
   BH.live={running:true,cpu:galCpu,mem:galMem,status:'devouring '+bodies.length+' bodies across '+RINGS.length+' systems',count:1};
 
@@ -493,6 +682,7 @@ function frame(t){
 
   // ===== STAR SYSTEMS — one sun per theme, orbiting the singularity =====
   const hovPrev=hovered; // last frame's hover — used to freeze the planet under the cursor
+  const hoverActive=performance.now()<hoverActiveUntil;
   hovered=null;
   RINGS.forEach((ring,ri)=>{
     if(ring.ux===undefined)layoutSystems(); // uncharted ring created at runtime
@@ -513,6 +703,15 @@ function frame(t){
     let sg=ctx.createRadialGradient(ring.sx,ring.sy,0,ring.sx,ring.sy,ring.sunR*2.4);
     sg.addColorStop(0,'#fff');sg.addColorStop(.3,ring.color);sg.addColorStop(1,ring.color+'00');
     ctx.fillStyle=sg;ctx.beginPath();ctx.arc(ring.sx,ring.sy,ring.sunR*2.4,0,7);ctx.fill();
+    if(ring.alert&&ring.alert!=='ok'){
+      const blast=(Math.sin(t*0.006)+1)/2;
+      const sev=ring.alert==='warn'?0.55:1;
+      ctx.strokeStyle=`rgba(255,107,107,${0.28+blast*0.42*sev})`;
+      ctx.lineWidth=Math.max(1.5,ring.sunR*0.18);
+      ctx.beginPath();ctx.arc(ring.sx,ring.sy,ring.sunR*(3.0+blast*2.4),0,7);ctx.stroke();
+      ctx.fillStyle=`rgba(255,107,107,${0.08+blast*0.08*sev})`;
+      ctx.beginPath();ctx.arc(ring.sx,ring.sy,ring.sunR*(2.7+blast*1.8),0,7);ctx.fill();
+    }
     // label: always readable, does not shrink away at low zoom
     ctx.fillStyle=ring.color;
     ctx.font=`700 ${Math.max(11,base*.19)}px ui-monospace,monospace`;
@@ -520,7 +719,7 @@ function frame(t){
     ctx.fillText(ring.name,ring.sx,ring.sy+Math.max(ring.sunR*2.2,ring.sysR*Math.min(zoom,1))+14);
     ctx.fillStyle='rgba(125,135,156,.9)';
     ctx.font=`${Math.max(9,base*.13)}px ui-monospace,monospace`;
-    ctx.fillText(ring.n+' bodies · '+Math.round(ring.mem)+' MB',ring.sx,ring.sy+Math.max(ring.sunR*2.2,ring.sysR*Math.min(zoom,1))+28);
+    ctx.fillText((ring.alerts?'✹ '+ring.alerts+' alerts · ':'')+ring.n+' bodies · '+Math.round(ring.mem)+' MB',ring.sx,ring.sy+Math.max(ring.sunR*2.2,ring.sysR*Math.min(zoom,1))+28);
   });
 
   // ===== WHITE DWARF — the graveyard. Dead & dormant bodies migrate here =====
@@ -542,7 +741,7 @@ function frame(t){
     // orbital velocity scales with live CPU: busy containers visibly race their orbit
     // hovering a planet freezes it — so you can actually click the fast ones
     const boost=b.live&&b.live.running?1+Math.min(b.live.cpu,40)*0.15:1;
-    if(!reduced&&!selected&&b!==hovPrev)b.ang+=b.speed*16*boost*(b.parent?3:1);
+    if(!kioskMode&&!reduced&&!selected&&b!==hovPrev)b.ang+=b.speed*16*frameScale*boost*(b.parent?3:1);
     const dead=b.live?!b.live.running:b.dormant;
     // dying is a journey: ease out of home orbit into the graveyard (and back, on resurrection)
     b.grave=Math.min(1,Math.max(0,(b.grave||0)+(dead?0.004:-0.012)));
@@ -567,23 +766,26 @@ function frame(t){
     b.vis=dead?1:Math.max(0,Math.min(1,(zoom-(1.5-Math.min(Math.sqrt(mem)*0.06,1.1)))*2.5));
     if(b.parent&&!dead)b.vis=Math.min(b.vis,Math.max(0,Math.min(1,(zoom-1.3)*2.5))); // moons need a closer look
     if(b.vis<0.4)continue;
-    const d=Math.hypot(mouse.x-b.x,mouse.y-b.y);
-    if(d<14&&(!hovered||d<hovered._d)){hovered=b;b._d=d;}
+    if(hoverActive){
+      const d=Math.hypot(mouse.x-b.x,mouse.y-b.y);
+      if(d<14&&(!hovered||d<hovered._d)){hovered=b;b._d=d;}
+    }
   }
   // suns and the singularity are hoverable/clickable too
-  if(!hovered){
+  if(hoverActive&&!hovered){
     for(const ring of RINGS){
       if(Math.hypot(mouse.x-ring.sx,mouse.y-ring.sy)<Math.max(ring.sunR*1.6,14)){
         if(!ring.sb)ring.sb={star:true,ring};
         ring.sb.name=ring.name;ring.sb.x=ring.sx;ring.sb.y=ring.sy;
         ring.sb.desc=STARLORE[ring.name]||'A sun of the KITTLERVERSE.';
         ring.sb.live={running:ring.alive===ring.n,mem:ring.mem,cpu:ring.cpu,
-          status:ring.alive+'/'+ring.n+' planets in stable orbit',count:1};
+          status:ring.alive+'/'+ring.n+' planets in stable orbit',count:1,
+          alert:ring.alert,reason:ring.alerts?ring.alerts+' active alert'+(ring.alerts>1?'s':''):''};
         hovered=ring.sb;break;
       }
     }
   }
-  if(!hovered&&Math.hypot(mouse.x-OX,mouse.y-OY)<bhR*1.15){BH.x=OX;BH.y=OY;hovered=BH;}
+  if(hoverActive&&!hovered&&Math.hypot(mouse.x-OX,mouse.y-OY)<bhR*1.15){BH.x=OX;BH.y=OY;hovered=BH;}
 
   for(const b of bodies){
     if(!b.vis||b.vis<0.02)continue;
@@ -594,7 +796,8 @@ function frame(t){
     if(b.parent)baseR*=0.6; // moons are moons
     b.drawR=baseR*zoom;
     const r=b.drawR*(hot?1.7:1);
-    const col=dead?'#ff6b6b':b.col;
+    const alarm=bodyAlert(b);
+    const col=dead||alarm!=='ok'?'#ff6b6b':b.col;
     if(b.live&&b.live.running){ // newborn glow: freshly (re)started containers burn white for their first day
       if(b.live.age===undefined)b.live.age=parseAge(b.live.status);
       if(b.live.age<24){
@@ -618,9 +821,22 @@ function frame(t){
     if(hot){
       ctx.fillStyle=col+'33';ctx.beginPath();ctx.arc(b.x,b.y,r*2.6,0,7);ctx.fill();
     }
-    let bg=ctx.createRadialGradient(b.x-r*.3,b.y-r*.3,r*.1,b.x,b.y,r);
-    bg.addColorStop(0,'#fff');bg.addColorStop(.35,col);bg.addColorStop(1,col+'55');
-    ctx.fillStyle=bg;ctx.beginPath();ctx.arc(b.x,b.y,r,0,7);ctx.fill();
+    if(alarm!=='ok'){
+      const blast=(Math.sin(t*0.008+b.idx)+1)/2;
+      ctx.strokeStyle=alarm==='warn'?'rgba(255,158,100,.75)':'rgba(255,107,107,.9)';
+      ctx.lineWidth=Math.max(1,r*0.2);
+      ctx.beginPath();ctx.arc(b.x,b.y,r*(2.0+blast*1.4),0,7);ctx.stroke();
+      ctx.fillStyle=alarm==='warn'?'rgba(255,158,100,.15)':'rgba(255,107,107,.18)';
+      ctx.beginPath();ctx.arc(b.x,b.y,r*(1.8+blast),0,7);ctx.fill();
+    }
+    if(kioskMode){
+      ctx.fillStyle=col;ctx.beginPath();ctx.arc(b.x,b.y,r,0,7);ctx.fill();
+      ctx.fillStyle='rgba(255,255,255,.55)';ctx.beginPath();ctx.arc(b.x-r*.28,b.y-r*.28,Math.max(.7,r*.22),0,7);ctx.fill();
+    }else{
+      let bg=ctx.createRadialGradient(b.x-r*.3,b.y-r*.3,r*.1,b.x,b.y,r);
+      bg.addColorStop(0,'#fff');bg.addColorStop(.35,col);bg.addColorStop(1,col+'55');
+      ctx.fillStyle=bg;ctx.beginPath();ctx.arc(b.x,b.y,r,0,7);ctx.fill();
+    }
     if(dead){ // dead/dormant body: dim + slow blink
       const blink=.4+.4*Math.sin(t*.003);
       ctx.fillStyle=`rgba(5,7,15,${.65-blink*.3})`;
@@ -639,14 +855,15 @@ function frame(t){
   if(hovered&&!dragging){
     cv.style.cursor='pointer';
     tip.style.display='block';
+    const alarm=alertLabel(hovered.live);
     tip.innerHTML='<div class="nm">'+hovered.name+'</div>'
       +'<div class="cat" style="color:'+hovered.ring.color+'">'+hovered.ring.name+'</div>'
       +'<div class="ds">'+hovered.desc+'</div>'
-      +'<div class="st" style="color:'+((hovered.live?!hovered.live.running:hovered.dormant)?'var(--red)':'var(--green)')+'">'
-      +(hovered.live?(hovered.live.running
+      +'<div class="st" style="color:'+(alarm||(hovered.live?!hovered.live.running:hovered.dormant)?'var(--red)':'var(--green)')+'">'
+      +(alarm?('✹ '+alarm):(hovered.live?(hovered.live.running
           ?'● '+hovered.live.status.toLowerCase()+' · '+hovered.live.mem.toFixed(0)+' MB · cpu '+hovered.live.cpu.toFixed(1)+'%'
           :'● ADRIFT — '+hovered.live.status.toLowerCase())
-        :(hovered.dormant?'● dormant':'● stable orbit'))+'</div>';
+        :(hovered.dormant?'● dormant':'● stable orbit')))+'</div>';
     const tw=tip.offsetWidth,th=tip.offsetHeight;
     tip.style.left=Math.min(W-tw-12,hovered.x+16)+'px';
     tip.style.top=Math.max(10,Math.min(H-th-12,hovered.y-th/2))+'px';
@@ -655,5 +872,16 @@ function frame(t){
     tip.style.display='none';
   }
 }
-requestAnimationFrame(frame);
+if(kioskMode){
+  // sem loop de 60Hz no Pi: canvas estático (órbitas congeladas), só a viagem CSS anima;
+  // redraw no load, quando chega telemetria (lastDrawAt=0) ou durante interação manual
+  frame(performance.now());
+  setInterval(()=>{
+    const t=performance.now();
+    if(!lastDrawAt||t<kioskPausedUntil){frame(t);return;}
+    updateKioskCamera(t);
+  },1000);
+}else{
+  requestAnimationFrame(frame);
+}
 </script>
