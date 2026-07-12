@@ -15,7 +15,7 @@
 
 ---
 
-A single-file HTML5 canvas app that renders every container on a Docker host as an orbital body in an interactive galaxy — with **live telemetry** (RAM, CPU, uptime, state) refreshed every minute by a 10 MB sidecar poller. No agents, no database, no JavaScript frameworks. Two containers, one shell script, one HTML file.
+A single-file HTML5 canvas app that renders every container on a Docker host as an orbital body in an interactive galaxy — with **live telemetry** (RAM, CPU, uptime, state, health, OOM and restart signals) refreshed every minute by a lightweight sidecar poller. No agents, no database, no JavaScript frameworks. Two containers, one shell script, one HTML file.
 
 ![KITTLERVERSE](docs/screenshots/galaxy.png)
 
@@ -32,6 +32,7 @@ Everything on screen encodes a real metric. Nothing is decoration.
 | ☽ **Moons** | Support containers (db, redis, cron) orbiting their parent planet |
 | ⚪ **White dwarf** | The Graveyard. Dead and dormant containers migrate there — and fly home if resurrected |
 | ○ **White glow** | Container (re)started in the last 24 h, fading with age |
+| ✹ **Supernova** | OOM, unhealthy state, restart loop, stopped container or failed critical probe |
 
 **Controls:** drag to travel · scroll to zoom into a system · hover freezes a planet · click any body for its dossier. `#still` in the URL skips the warp intro (handy for headless screenshots). `prefers-reduced-motion` respected.
 
@@ -42,16 +43,20 @@ Everything on screen encodes a real metric. Nothing is decoration.
 |                    docker host                    |
 |                                                   |
 |  galaxy-poller (docker:cli, ~10 MB)               |
-|    docker ps -a + docker stats  --every 60s-->    |
-|    awk --> www/telemetry.json                     |
+|    docker ps/stats/inspect + cheap probes         |
+|    --every 60s--> www/telemetry.json              |
 |                                                   |
 |  galaxy-web (nginx:alpine, ~4 MB)                 |
 |    serves www/  --> browser fetches               |
 |    telemetry.json every 60s                       |
+|                                                   |
+|  galaxy-control (python:alpine)                   |
+|    Docker API over /var/run/docker.sock           |
+|    start/stop/restart/logs on port 8097           |
 +---------------------------------------------------+
 ```
 
-No socket exposure to the browser: the poller reads `/var/run/docker.sock` **read-only** and writes a flat JSON file; nginx serves static files and nothing else. If `telemetry.json` is unreachable, the app degrades to static mode with the hardcoded inventory.
+No socket exposure to the browser for telemetry: the poller reads `/var/run/docker.sock` **read-only** and writes a flat JSON file; nginx serves static files and nothing else. Optional control actions go through `galaxy-control`, a tiny LAN API with CORS restricted to the Galaxy UI and a denylist for critical/self containers. The extra alert signals come from Docker metadata plus tiny service probes, not from a monitoring database. If `telemetry.json` is unreachable, the app degrades to static mode with the hardcoded inventory.
 
 ## Quick start
 
@@ -69,8 +74,9 @@ Then make it yours: edit the `RINGS` inventory at the top of `www/index.html` �
 | File | Role |
 |------|------|
 | `www/index.html` | The entire app — canvas renderer, physics, HUD, dossiers. Zero external dependencies |
-| `poller.sh` | 25-line POSIX shell + awk loop that turns `docker ps/stats` into `telemetry.json` |
-| `docker-compose.yml` | `galaxy-web` (nginx) + `galaxy-poller` (docker:cli) |
+| `poller.sh` | POSIX shell + awk loop that turns Docker state, stats, inspect metadata and critical probes into `telemetry.json` |
+| `control_server.py` | Dependency-free Python API for logs and start/stop/restart actions |
+| `docker-compose.yml` | `galaxy-web` (nginx) + `galaxy-poller` (docker:cli) + `galaxy-control` |
 | `www/telemetry.json` | Sample snapshot so the galaxy is alive on first boot |
 
 > ⚠ Keep `<meta charset="utf-8">` as the **first line** of `index.html` — nginx doesn't declare a charset and the π on the singularity turns to mojibake without it.

@@ -16,3 +16,13 @@ services:
       - ./poller.sh:/poller.sh:ro
     entrypoint: ["sh","/poller.sh"]
     restart: always
+  galaxy-control:
+    image: python:3.11-alpine
+    container_name: galaxy-control
+    ports:
+      - "8097:8097"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./control_server.py:/control_server.py:ro
+    command: ["python","/control_server.py"]
+    restart: always
