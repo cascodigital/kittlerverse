@@ -83,7 +83,7 @@ Then make it yours: edit the `RINGS` inventory at the top of `www/index.html` �
 
 ## Static demo
 
-**[▶ Live demo (frozen snapshot)](https://claude.ai/code/artifact/bc6832c1-6b84-4cbe-abeb-47d51b8bff7d)** — real telemetry baked in, banner-labeled as demo. The app detects the missing feed and keeps rendering, so a snapshot can be published anywhere that serves one HTML file.
+**[▶ Live demo (frozen snapshot)](https://cascodigital.github.io/kittlerverse/)** — served from the `gh-pages` branch via GitHub Pages, with real telemetry baked in. The app detects the missing live feed and keeps rendering, so a snapshot can be published anywhere that serves one HTML file. To refresh it: `git subtree split --prefix www -b gh-pages && git push -f origin gh-pages`.
 
 ---
 
