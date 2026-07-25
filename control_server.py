@@ -4,6 +4,7 @@ import json
 import os
 import re
 import socket
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, quote, unquote, urlparse
 
@@ -18,6 +19,8 @@ ALLOWED_ORIGINS = {
 DENY_EXACT = {"galaxy-web", "galaxy-poller", "galaxy-control", "watchtower", "n8n"}
 DENY_PREFIX = ("cloudflared-",)
 NAME_RE = re.compile(r"^[A-Za-z0-9_.-]+$")
+LEGENDAS_COMPOSE_DIR = "/dados/dockers/legendas"
+LEGENDAS_ENV_FILE = "/dados/dockers/claude/ai/config/mimi_api.txt"
 
 
 class UnixHTTPConnection(http.client.HTTPConnection):
@@ -68,6 +71,40 @@ def valid_name(name):
 
 def denied(name):
     return name in DENY_EXACT or any(name.startswith(p) for p in DENY_PREFIX)
+
+
+def docker_json(method, path, payload):
+    body = json.dumps(payload, separators=(",", ":")).encode()
+    conn = UnixHTTPConnection(DOCKER_SOCK)
+    try:
+        conn.request(method, path, body=body, headers={"Content-Type": "application/json"})
+        resp = conn.getresponse()
+        data = resp.read()
+        return resp.status, data, dict(resp.getheaders())
+    finally:
+        conn.close()
+
+
+def run_legendas_compose():
+    task_name = f"galaxy-legendas-start-{int(time.time())}"
+    payload = {
+        "Image": "docker:cli",
+        "Cmd": ["sh", "-lc", f"cd {LEGENDAS_COMPOSE_DIR} && docker compose up -d legendas"],
+        "WorkingDir": LEGENDAS_COMPOSE_DIR,
+        "HostConfig": {
+            "AutoRemove": True,
+            "Binds": [
+                "/var/run/docker.sock:/var/run/docker.sock",
+                f"{LEGENDAS_COMPOSE_DIR}:{LEGENDAS_COMPOSE_DIR}",
+                f"{LEGENDAS_ENV_FILE}:{LEGENDAS_ENV_FILE}:ro",
+            ],
+        },
+    }
+    status, body, _ = docker_json("POST", f"/containers/create?name={quote(task_name)}", payload)
+    if status >= 300:
+        return status, body
+    status, body, _ = docker_request("POST", f"/containers/{quote(task_name)}/start")
+    return status, body
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -141,6 +178,12 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(400, False, error="invalid_container_name")
         if denied(name):
             return self._json(403, False, error="container_denied", container=name)
+
+        if name == "legendas" and action in ("start", "restart"):
+            status, body = run_legendas_compose()
+            if status not in (200, 201, 204, 304):
+                return self._json(status, False, error="compose_start_failed", action=action, detail=body.decode("utf-8", "replace")[:500])
+            return self._json(container=name, action=action, docker_status=status, mode="compose_service")
 
         suffix = {"start": "/start", "stop": "/stop?t=10", "restart": "/restart?t=10"}[action]
         status, body, _ = docker_request("POST", f"/containers/{quote(name)}{suffix}")
