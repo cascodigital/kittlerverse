@@ -401,7 +401,9 @@ cv.addEventListener('pointerleave',()=>{mouse.x=-999;hovered=null;tip.style.disp
 	const CONTROL_API=(location.protocol==='file:')?null:((location.port==='8096')?(location.protocol+'//'+location.hostname+':8097'):'');
 	let actionTarget=null;
 	function controlAllowed(b){
-	  return !!(b&&b.live&&!b.star&&!b.bh&&b.live.count===1&&b.name.indexOf('×')<0);
+	  if(!b||b.star||b.bh||b.name.indexOf('×')>=0)return false;
+	  if(b.name==='legendas')return true;
+	  return !!(b.live&&b.live.count===1);
 	}
 	function setCtl(msg,color){
 	  ctlmsg.textContent=msg||'';
