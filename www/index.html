@@ -80,7 +80,7 @@
 
 <div class="hud" id="title">
   <h1>KITTLER<b>VERSE</b></h1>
-  <p>container galaxy · 9 star systems · one singularity · orange pi 5</p>
+  <p id="subtitle">container galaxy · binary singularity · orange pi 5 + dotpi</p>
 </div>
 <div class="hud" id="stats">
   <span class="n" id="cnum">56</span><br><span id="sline">containers aboard</span>
@@ -134,81 +134,16 @@
 
 <script>
 'use strict';
-// ============ DATA — real inventory, 2026-07-09 ============
-const RINGS = [
- {name:'AI CORE', color:'#6ee7ff', bodies:[
-  ['claude-terminal','claude-terminal:ttyd','The Skippy Console. A web terminal where Claude, Gemini and Codex do sysadmin work around the clock.'],
-  ['claude-worker','claude-claude-worker','Headless Claude. Builds dashboards while nobody watches. Unaware it lives in a container.'],
-  ['claude-portal','nginx:alpine','Front door to the machine cult.'],
-  ['claude-upload','python:3.11-slim','File-drop endpoint for feeding the AIs.'],
-  ['claude-syncthing','linuxserver/syncthing','Mirrors the AI brain between laptop and mothership. No thought is ever lost.'],
-  ['cockpit','python:3.11-slim','Black-box recorder for every conversation with the machines. Semantic search included.'],
-  ['chatgpt-site-browser','chatgpt-site-browser','A browser that browses so I don’t have to.'],
-  ['whatsapp-mcp-collector','whatsapp-mcp-server','Lets the AI read WhatsApp. Nothing ominous about that at all.'],
- ]},
- {name:'TRADING FLOOR', color:'#5eea8d', bodies:[
-  ['stock-analysis-api','stock-service-stock-api','Technical + fundamental analysis of B3 stocks, as an API.'],
-  ['stock-analysis-mcp','stock-service-stock-mcp','Plugs the stock engine straight into the AI. The robot picks the trades.'],
-  ['acoes-treemap','acoes-treemap','Live portfolio treemap on a dedicated 1080p wall display. Bloomberg terminal at home, sort of.'],
- ]},
- {name:'MEDIA CARTEL', color:'#ff6b6b', bodies:[
-  ['plexms','plexinc/pms-docker','Plex. The reason the household tolerates the rest of this system.'],
-  ['sonarr','linuxserver/sonarr','TV acquisition automaton. It hunts, so I may feast.'],
-  ['radarr','linuxserver/radarr','Same, but movies.'],
-  ['prowlarr','linuxserver/prowlarr','The cartel’s phone book.'],
-  ['qbittorrent','linuxserver/qbittorrent','Delivery truck, torrent flavor.'],
-  ['sabnzbd','linuxserver/sabnzbd','Delivery truck, usenet flavor.'],
-  ['overseerr','linuxserver/overseerr','Family requests content like it’s room service.'],
-  ['tautulli','linuxserver/tautulli','Knows exactly who watched what, and how much they skipped.'],
-  ['metube','alexta69/metube','Point at video, receive file.'],
-  ['legendas','subtitle-auto-translator','AI subtitle translator. Wakes on schedule, does its job, exits 0. A lifestyle.',1],
- ]},
- {name:'COMMS ARRAY', color:'#6ea8ff', bodies:[
-  ['cloudflared ×3','cloudflare/cloudflared','Three Cloudflare tunnels, one per domain. Zero open ports to space.',0,'cloudflared-'],
-  ['wireguard','wg-easy','VPN. My phone is always, technically, at home.'],
-  ['meshcentral','meshcentral','TeamViewer, but I own the server.'],
-  ['suporte-remoto-web','nginx:alpine','Remote-support page for clients.'],
-  ['intellissh','clusterzx/intellissh','Web SSH with an AI copilot. Because of course.'],
-  ['chhoto-url','chhoto-url','Sovereign URL shortener.'],
-  ['gptwol','misterbabou/gptwol','Wake-on-LAN panel. Necromancy for PCs.'],
-  ['clipcascade','clipcascade','Clipboard sync across every device I own.',0,'clipcascade-'],
- ]},
- {name:'SCIENCE LAB', color:'#b58cff', bodies:[
-  ['ttrss','wangqiru/ttrss','RSS never died. It moved into my basement.'],
-  ['ttrss_postgres','postgres:16-alpine','The basement’s filing cabinet.'],
-  ['hmobrss','hmobrss','Builds RSS feeds for sites too rude to offer one.'],
-  ['flaresolverr','flaresolverr','Cloudflare-challenge negotiator for the scraper above.',0,'hmobrss_flaresolverr'],
-  ['mercury','mercury-parser-api','Strips web pages to pure text. No ads survive.'],
-  ['libretranslate','libretranslate','Self-hosted translation engine. The UN interpreter of the stack.'],
-  ['calibre-web','linuxserver/calibre-web','Personal library and OPDS shelf for every reading device.'],
-  ['kosync','koreader/kosync','Keeps reading position aligned across Kindle, Android and Linux.'],
- ]},
- {name:'BUSINESS OPS', color:'#ffd166', bodies:[
-  ['glpi','glpi-glpi','ITSM helpdesk. Real tickets, real clients, real SLAs.'],
-  ['glpi-db','mariadb:11.8','Where the tickets sleep.'],
-  ['glpi-cron','glpi-glpi-cron','The helpdesk’s alarm clock.'],
-  ['ninja-app','invoiceninja:5','Generates the invoices that justify this entire star system.'],
-  ['ninja-web','nginx:alpine','Invoice Ninja’s reception desk.'],
-  ['ninja-db','mariadb:10.6','Invoice Ninja’s memory.'],
-  ['ninja-redis','redis:alpine','Invoice Ninja’s caffeine.'],
- ]},
- {name:'CREW QUARTERS', color:'#ff9e64', bodies:[
-  ['cozinha','cozinha','Deploys recipes to the kitchen TV and builds a cooking playlist. Yes, the kitchen has a CI/CD pipeline.'],
-  ['shse-http','rampartfts/shse','Feeds the living-room TV photo slideshow.'],
-  ['radar-teatros','nginx:alpine','Local theater listings. Culture, containerized.'],
- ]},
- {name:'SHIELDS & SENSORS', color:'#9aa7ff', bodies:[
-  ['vaultwarden','vaultwarden/server','All the passwords, none of the cloud.'],
-  ['dockhand','fnsys/dockhand','The harbormaster of this madness.'],
-  ['dockhand-agent','finsys/hawser','The harbormaster’s deckhand.'],
-  ['glances','nicolargo/glances','The system’s vital signs.'],
-  ['speedtest-tracker','speedtest-tracker','Evidence locker for when the ISP lies.'],
- ]},
- {name:'ENGINE ROOM', color:'#ff7847', bodies:[
-  ['n8n','n8nio/n8n','Automation brainstem. If it happens on a schedule, n8n did it — including inventorying this very galaxy, daily at 04:00.'],
-  ['watchtower','nickfedor/watchtower','Auto-updates every container while I sleep. What could go wrong.'],
- ]},
-];
+// ============ DATA — derived at runtime, nothing hardcoded ============
+// telemetry.json says WHAT exists, on WHICH host. lore.json says which system a
+// container belongs to and what to say about it. Consequence: a container that
+// dies stops being drawn, a new one appears on its own, and the map can never
+// again disagree with reality the way a hand-maintained inventory does.
+let LORE={systems:[],bodies:{},moons:{},prefixes:[],hosts:[]};
+let RINGS=[];
+let HOSTS=[];
+const bodies=[];
+let worldKey='';
 
 // ============ SCENE ============
 const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
@@ -235,89 +170,152 @@ function buildStarLayer(){
 }
 addEventListener('resize',buildStarLayer);buildStarLayer();
 
-// bodies — each theme is a star system: planets orbit their sun, suns orbit the black hole
 // planets get their own colors — a system is a family, not a uniform
 const PCOLS=['#8fd3c7','#e0b97e','#c96f4a','#9fc2e8','#c9a7eb','#a8d582','#e89fb7','#d9d2a6','#7fb2b8','#e8c15e'];
-const bodies=[];let total=0;
-RINGS.forEach((ring,ri)=>{
-  const n=ring.bodies.length;ring.n=n;
-  ring.bodies.forEach((b,i)=>{
-    total++;
-    bodies.push({name:b[0],img:b[1],desc:b[2],dormant:!!b[3],match:b[4]||b[0],ring,ri,
-      ang:(i/n)*Math.PI*2,
-      idx:i, // own orbit radius inside the system — no planetary pile-ups
-      col:PCOLS[(ri*3+i)%PCOLS.length],
-      rtilt:((ri*7+i*13)%10)/10*Math.PI, // ring tilt, deterministic
-      // one protoplanetary disk, one direction: the whole system orbits the same way (real rule, not just Sol)
-      speed:(0.00006+0.00003*Math.random())*(rnd(ri*13+5)>0.5?-1:1),
-      r:4.5+Math.min(b[0].length*0.14,2.5),
-      x:0,y:0});
-  });
-});
-document.getElementById('sline').textContent='containers aboard · '+total+' orbital bodies';
 
-// chaotic orbital elements per system — deterministic, seeded by index
+// chaotic orbital elements — deterministic, seeded by index
 function rnd(seed){const x=Math.sin(seed*127.1+311.7)*43758.5453;return x-Math.floor(x);}
-function assignOrbit(ring,ri){
-  // populous systems sink deeper into the gravity well — heavyweights hug the singularity
-  ring.orbR=0.32+(1-Math.min(ring.n||1,10)/10)*0.42+rnd(ri*3+1)*0.08;
-  ring.ecc=0.5+rnd(ri*3+2)*0.4;              // how squashed the ellipse is
-  ring.tilt=rnd(ri*3+3)*Math.PI;             // orbit plane rotation
-  ring.phase=(ri/9)*Math.PI*2+rnd(ri*7)*1.2; // spread out, with jitter
-}
-RINGS.forEach(assignOrbit);
 
-// static galactic layout — suns are light-years apart, they don't visibly move.
-// relaxation pass shoves systems apart so no sun crowds another.
+function hostOf(id){return HOSTS.find(h=>h.id===id)||HOSTS[0]||{ux:0,uy:0,id:id};}
+function starMeta(name){
+  return LORE.systems.find(s=>s.name===name)
+      || {name:name,color:'#9aa7ff',lore:'A star that was not on any chart. Bodies appear here when containers show up with no entry in lore.json.'};
+}
+
+// each system orbits ITS OWN singularity — the galaxy is a binary now
+const LOBE=0.36; // how far a system may stray from its host before the lobe pulls it back
+function assignOrbit(ring,ri){
+  ring.orbR=0.15+(1-Math.min(ring.n||1,10)/10)*0.16+rnd(ri*3+1)*0.04;
+  ring.ecc=0.55+rnd(ri*3+2)*0.35;
+  ring.tilt=rnd(ri*3+3)*Math.PI;
+  ring.phase=rnd(ri*7+ri)*Math.PI*2;
+}
+
+// static galactic layout: suns spread inside their host's lobe, then relax apart
 function layoutSystems(){
   RINGS.forEach((ring,ri)=>{
     if(ring.orbR===undefined)assignOrbit(ring,ri);
-    const R=ring.orbR;
+    const h=hostOf(ring.host),R=ring.orbR;
     const ex=Math.cos(ring.phase)*R,ey=Math.sin(ring.phase)*R*ring.ecc;
-    ring.ux=(ex*Math.cos(ring.tilt)-ey*Math.sin(ring.tilt))*1.18; // wide-screen stretch
-    ring.uy=(ex*Math.sin(ring.tilt)+ey*Math.cos(ring.tilt))*0.8;
-    ring.sysF=0.06+Math.min(ring.n||1,10)*0.007;
+    ring.ux=h.ux+(ex*Math.cos(ring.tilt)-ey*Math.sin(ring.tilt))*1.05;
+    ring.uy=h.uy+(ex*Math.sin(ring.tilt)+ey*Math.cos(ring.tilt))*0.85;
+    ring.sysF=0.05+Math.min(ring.n||1,10)*0.006;
   });
-  for(let it=0;it<60;it++){
+  for(let it=0;it<80;it++){
     for(let i=0;i<RINGS.length;i++)for(let j=i+1;j<RINGS.length;j++){
       const a=RINGS[i],c=RINGS[j];
       let dx=c.ux-a.ux,dy=c.uy-a.uy,d=Math.hypot(dx,dy)||0.001;
-      const min=a.sysF+c.sysF+0.12; // generous no-fly zone — zooming one system shows only that system
-      if(d<min){const p=(min-d)/2;dx/=d;dy/=d;
-        a.ux-=dx*p;a.uy-=dy*p;c.ux+=dx*p;c.uy+=dy*p;}
+      const min=a.sysF+c.sysF+0.10; // no-fly zone: zooming one system shows only that system
+      if(d<min){const p=(min-d)/2;dx/=d;dy/=d;a.ux-=dx*p;a.uy-=dy*p;c.ux+=dx*p;c.uy+=dy*p;}
+    }
+    for(const ring of RINGS){
+      // a system belongs to its host's lobe and stays there: never closer than the
+      // event horizon, never far enough to drift into the companion's territory
+      const own=hostOf(ring.host);
+      let dx=ring.ux-own.ux,dy=ring.uy-own.uy,d=Math.hypot(dx,dy)||0.001;
+      const min=ring.sysF+0.13,max=LOBE;
+      if(d<min){ring.ux=own.ux+dx/d*min;ring.uy=own.uy+dy/d*min;}
+      else if(d>max){ring.ux=own.ux+dx/d*max;ring.uy=own.uy+dy/d*max;}
+      for(const h of HOSTS){ // and nothing crowds a foreign singularity either
+        if(h===own)continue;
+        let ex=ring.ux-h.ux,ey=ring.uy-h.uy,e=Math.hypot(ex,ey)||0.001;
+        const keep=ring.sysF+0.18;
+        if(e<keep){ring.ux+=ex/e*(keep-e);ring.uy+=ey/e*(keep-e);}
+      }
     }
   }
 }
-layoutSystems();
 
-// star lore — shown when you click a sun
-const STARLORE={
- 'AI CORE':'The strange blue star the rest of the galaxy quietly orbits its opinions around. Three artificial minds live here and do the sysadmin work while the owner sleeps.',
- 'TRADING FLOOR':'A green dwarf that flares violently between 10:00 and 17:00 B3 time, then goes eerily quiet.',
- 'MEDIA CARTEL':'The most massive star in the KITTLERVERSE. Officially an entertainment system; unofficially the reason the household tolerates everything else.',
- 'COMMS ARRAY':'Every signal that leaves or enters the galaxy passes through this star. Zero open ports to space — tunnels only.',
- 'SCIENCE LAB':'A quiet violet star where the written web is captured, stripped, translated and filed.',
- 'BUSINESS OPS':'The yellow star that pays for the whole galaxy. Tickets in, invoices out.',
- 'CREW QUARTERS':'A warm little star for the humans: recipes on the kitchen TV, photos in the living room, theater listings.',
- 'SHIELDS & SENSORS':'Passwords, monitoring and evidence against lying ISPs. The galaxy’s immune system.',
- 'ENGINE ROOM':'Small, dim, and if it ever dies the entire galaxy stops on a schedule. n8n lives here.',
- 'UNCHARTED':'A star that was not on any chart. Bodies appear here when new containers are detected.'};
+// the singularities: one per docker host. Click the glyph for the host dossier.
+function buildHosts(present){
+  const declared=(LORE.hosts||[]).filter(h=>present.has(h.id));
+  const list=declared.length?declared:[...present].map(id=>({id,glyph:'?',label:id.toUpperCase(),
+    name:id,img:'unknown host',desc:'A docker host the charts know nothing about.',ux:0,uy:0,color:'#9aa7ff'}));
+  const solo=list.length===1;
+  HOSTS=list.map(h=>{
+    const old=HOSTS.find(x=>x.id===h.id)||{};
+    return Object.assign(old,{bh:true,id:h.id,glyph:h.glyph,label:h.label,name:h.name,img:h.img,desc:h.desc,
+      ux:solo?0:h.ux,uy:solo?0:h.uy,
+      wux:(solo?0:h.ux)+0.15,wuy:(solo?0:h.uy)-0.14,
+      ring:{name:'SINGULARITY',color:h.color||'#ff9e64'},x:0,y:0});
+  });
+}
 
-// collect planet names per system (for the star dossier)
-RINGS.forEach(r=>{r.planets=r.bodies.map(b=>b[0]);});
+// which planet does a container belong to? exact name first, then prefix aggregates
+function bodyLore(name){
+  const e=LORE.bodies[name];
+  if(e)return {sys:e.sys,img:e.img,desc:e.desc,dormant:!!e.dormant,label:name};
+  for(const p of (LORE.prefixes||[]))
+    if(name.startsWith(p.match))return {sys:p.sys,img:p.img,desc:p.desc,dormant:!!p.dormant,label:p.name,agg:true};
+  return null;
+}
 
-// moons: support containers orbit their parent planet, not the sun (compose hierarchy → orbital hierarchy)
-const MOONS={'glpi-db':'glpi','glpi-cron':'glpi','ninja-web':'ninja-app','ninja-db':'ninja-app',
-             'ninja-redis':'ninja-app','ttrss_postgres':'ttrss','flaresolverr':'hmobrss','kosync':'calibre-web'};
-{const mi={};
- bodies.forEach(b=>{
-  const pn=MOONS[b.name];
-  if(pn){b.parent=bodies.find(p=>p.name===pn)||null;
-    if(b.parent){mi[pn]=mi[pn]||0;b.moonIdx=mi[pn]++;}}
- });}
-
-// the white dwarf: graveyard star near the singularity — dead & dormant bodies leave home and orbit it
-const WD={ux:0.17,uy:-0.16};
+// rebuild the map from live telemetry. Structural changes rebuild rings/bodies;
+// membership (short-lived siblings behind a prefix) refreshes every poll.
+function rebuildWorld(entries){
+  const groups=new Map(),present=new Set();
+  for(const e of entries){
+    const host=e.host||'46';present.add(host);
+    const L=bodyLore(e.name);
+    const sys=L?L.sys:'UNCHARTED',key=L?L.label:e.name;
+    const gk=host+'~'+sys+'~'+key;
+    let g=groups.get(gk);
+    if(!g){g={gk,host,sys,key,lore:L,names:[]};groups.set(gk,g);}
+    g.names.push(e.name);
+  }
+  const wk=[...groups.keys()].sort().join('|');
+  if(wk!==worldKey){
+    worldKey=wk;
+    const oldB=new Map(bodies.map(b=>[b.id,b])),oldR=new Map(RINGS.map(r=>[r.id,r]));
+    const spread={};
+    for(const g of groups.values()){(spread[g.sys]=spread[g.sys]||new Set()).add(g.host);}
+    const byRing=new Map();RINGS=[];bodies.length=0;
+    for(const g of [...groups.values()].sort((a,b)=>a.gk<b.gk?-1:1)){
+      const rid=g.host+'|'+g.sys;
+      let ring=byRing.get(rid);
+      if(!ring){
+        const meta=starMeta(g.sys),old=oldR.get(rid)||{};
+        ring=Object.assign(old,{id:rid,host:g.host,sys:g.sys,
+          name:g.sys+(spread[g.sys].size>1?' · '+g.host:''),
+          color:meta.color,lore:meta.lore,groups:[]});
+        byRing.set(rid,ring);RINGS.push(ring);
+      }
+      ring.groups.push(g);
+    }
+    buildHosts(present);
+    RINGS.forEach((ring,ri)=>{
+      ring.ri=ri;ring.n=ring.groups.length;ring.planets=ring.groups.map(g=>g.key);
+      ring.groups.forEach((g,i)=>{
+        const id=g.host+'|'+g.key;
+        const b=oldB.get(id)||{id,ang:rnd(ri*17+i*7)*Math.PI*2,grave:0,x:0,y:0};
+        b.name=g.key;b.host=g.host;b.ring=ring;b.ri=ri;b.idx=i;
+        b.img=g.lore?g.lore.img:'?';
+        b.desc=g.lore?g.lore.desc:'New body detected. Not yet on the charts — add it to lore.json.';
+        b.dormant=!!(g.lore&&g.lore.dormant);
+        b.uncharted=!g.lore;
+        b.col=PCOLS[(ri*3+i)%PCOLS.length];
+        b.rtilt=((ri*7+i*13)%10)/10*Math.PI;
+        b.speed=(0.00006+0.00003*rnd(ri*31+i*5))*(rnd(ri*13+5)>0.5?-1:1);
+        b.r=4.5+Math.min(g.key.length*0.14,2.5);
+        b.parent=null;b.moonIdx=0;
+        bodies.push(b);
+      });
+    });
+    const mi={};
+    for(const b of bodies){ // moons only orbit a parent on the SAME host
+      const pn=(LORE.moons||{})[b.name];if(!pn)continue;
+      const p=bodies.find(x=>x.name===pn&&x.host===b.host);
+      if(p){b.parent=p;const k=b.host+'|'+pn;mi[k]=mi[k]||0;b.moonIdx=mi[k]++;}
+    }
+    RINGS.forEach(assignOrbit);
+    layoutSystems();
+  }
+  const byId=new Map(bodies.map(b=>[b.id,b]));
+  for(const g of groups.values()){
+    const b=byId.get(g.host+'|'+g.key);
+    if(b)b.members=g.names;
+  }
+}
 
 // container age from docker status string ("Up 3 days", "Up About an hour") → hours
 function parseAge(s){
@@ -326,14 +324,11 @@ function parseAge(s){
   return (m[1]?+m[1]:1)*({second:1/3600,minute:1/60,hour:1,day:24,week:168,month:720}[m[2].toLowerCase()]||24);
 }
 
-// the singularity is a body too — click the π for the host dossier
-const BH={bh:true,name:'orange pi 5 — the singularity',
-  img:'RK3588 · 8× ARM64 cores · 8 GB LPDDR4X · NVMe 117 GB · Armbian',
-  desc:'The gravitational center of the KITTLERVERSE. Every sun, every planet, every workload in this galaxy exists inside this one palm-sized board drawing about as much power as an LED bulb. It does not orbit anything. Everything orbits it.',
-  ring:{name:'SINGULARITY',color:'#ff9e64'},x:0,y:0};
+// singularities are bodies too — click a glyph for its host dossier.
+// HOSTS is built by rebuildWorld() from lore.json + whatever telemetry actually reports.
 
 // camera: drag pans, wheel zooms toward the cursor
-let zoom=1,targetZoom=1,panX=0,panY=0,targetPanX=0,targetPanY=0;
+let zoom=0.72,targetZoom=0.72,panX=0,panY=0,targetPanX=0,targetPanY=0;
 let dragging=false,lastX=0,lastY=0,downX=0,downY=0;
 let hovered=null,selected=null;
 const mouse={x:-999,y:-999};
@@ -402,6 +397,9 @@ cv.addEventListener('pointerleave',()=>{mouse.x=-999;hovered=null;tip.style.disp
 	let actionTarget=null;
 	function controlAllowed(b){
 	  if(!b||b.star||b.bh||b.name.indexOf('×')>=0)return false;
+	  // galaxy-control only holds the LOCAL docker socket. Remote hosts are reached
+	  // by a read-only forced command on purpose — no start/stop from here.
+	  if(b.host&&b.host!=='46')return false;
 	  if(b.name==='legendas')return true;
 	  return !!(b.live&&b.live.count===1);
 	}
@@ -412,7 +410,9 @@ cv.addEventListener('pointerleave',()=>{mouse.x=-999;hovered=null;tip.style.disp
 	function wireActions(b){
 	  actionTarget=controlAllowed(b)?b:null;
 	  logsBox.style.display='none';logsBox.textContent='';
-	  setCtl(actionTarget?'control channel ready':'control disabled for this body');
+	  setCtl(actionTarget?'control channel ready'
+	    :((b&&b.host&&b.host!=='46')?'read-only host — control channel is deliberately one-way'
+	                                :'control disabled for this body'));
 	  actions.style.display=(b&&!b.star&&!b.bh)?'block':'none';
 	  const running=!!(actionTarget&&actionTarget.live&&actionTarget.live.running);
 	  document.getElementById('actstart').disabled=!actionTarget||running;
@@ -464,7 +464,7 @@ cv.addEventListener('pointerleave',()=>{mouse.x=-999;hovered=null;tip.style.disp
     const r=b.ring;
     document.getElementById('pname').textContent=r.name;
     const pc=document.getElementById('pcat');pc.textContent='home star · '+r.n+' planets';pc.style.color=r.color;
-    document.getElementById('pdesc').textContent=STARLORE[r.name]||'A sun of the KITTLERVERSE.';
+    document.getElementById('pdesc').textContent=r.lore||'A sun of the KITTLERVERSE.';
     document.getElementById('dtimg').textContent='planets';
     document.getElementById('pimg').textContent=(r.planets||[]).join(' · ')||'—';
     const ps=document.getElementById('pstat');
@@ -490,8 +490,8 @@ cv.addEventListener('pointerleave',()=>{mouse.x=-999;hovered=null;tip.style.disp
     :(b.dormant?'DORMANT — wakes on schedule, exits 0':'STABLE ORBIT — up and healthy'));
   ps.style.color=alarm||dead?'var(--red)':'var(--green)';
   document.getElementById('pring').textContent=b.bh
-    ?'Galactic center — all '+RINGS.length+' systems orbit it'
-    :'System '+(b.ri+1)+' of '+RINGS.length+' — orbiting the '+b.ring.name+' star';
+    ?'Docker host — '+RINGS.filter(r=>r.host===b.id).length+' systems orbit this singularity'
+    :'Host '+b.host+' — orbiting the '+b.ring.sys+' star';
 	  document.getElementById('ptel').textContent=b.live
 	    ?(b.live.mem.toFixed(1)+' MB RAM · '+b.live.cpu.toFixed(2)+'% CPU'
 	      +(b.live.health&&b.live.health!=='none'?' · health '+b.live.health:'')
@@ -516,7 +516,7 @@ addEventListener('keydown',e=>{if(e.key==='Escape')closePanel();});
 // ============ LIVE TELEMETRY ============
 // Served next to this file by galaxy-poller on the mothership.
 // On claude.ai (CSP) or file:// the fetch fails and we stay in static-map mode.
-let liveTs=null,alertSummary={critical:0,warn:0};
+let liveTs=null,alertSummary={critical:0,warn:0},hostStatus=[];
 const SEV={ok:0,warn:1,down:2,critical:3};
 function worse(a,b){return (SEV[b]||0)>(SEV[a]||0)?b:a;}
 function bodyAlert(b){return (b.dormant?'ok':((b.live&&b.live.alert)||'ok'));}
@@ -526,12 +526,13 @@ function alertLabel(live){
 }
 function applyLive(data){
   const entries=data.containers.slice();
-  const claimed=new Set();
+  hostStatus=Array.isArray(data.hosts)?data.hosts:[];
+  rebuildWorld(entries); // the map IS the telemetry — no hand-kept inventory to drift
+  const byName=new Map();
+  for(const e of entries)byName.set((e.host||'46')+'|'+e.name,e);
   for(const b of bodies){ b.live=null;
-    let mine=entries.filter(e=>e.name===b.match&&!claimed.has(e.name));
-    if(!mine.length) mine=entries.filter(e=>e.name.startsWith(b.match)&&!claimed.has(e.name));
+    const mine=(b.members||[]).map(n=>byName.get(b.host+'|'+n)).filter(Boolean);
     if(mine.length){
-      mine.forEach(e=>claimed.add(e.name));
       const alert=mine.reduce((a,e)=>worse(a,e.alert||'ok'),'ok');
       const reason=(mine.find(e=>(e.alert||'ok')===alert&&e.reason)||mine.find(e=>e.reason)||{}).reason||'';
       const health=(mine.find(e=>e.health&&e.health!=='none')||{}).health||'none';
@@ -546,7 +547,7 @@ function applyLive(data){
   }
   if(Array.isArray(data.services)){
     for(const svc of data.services){
-      const target=bodies.find(b=>b.name===svc.target||b.match===svc.target);
+      const target=bodies.find(b=>b.name===svc.target||(b.members||[]).includes(svc.target));
       if(!target)continue;
       if(!target.live)target.live={running:false,cpu:0,mem:0,status:'probe target missing',count:0,alert:'critical',reason:'missing '+svc.target};
       if((SEV[svc.alert]||0)>(SEV[target.live.alert]||0)){
@@ -556,24 +557,6 @@ function applyLive(data){
       target.live.services=(target.live.services||[]).concat(svc);
     }
   }
-  // uncharted: containers not in the map get their own outer ring
-  const unknown=entries.filter(e=>!claimed.has(e.name));
-  for(const e of unknown){
-    let b=bodies.find(x=>x.uncharted&&x.name===e.name);
-    if(!b){
-      let ring=RINGS.find(r=>r.name==='UNCHARTED');
-      if(!ring){ring={name:'UNCHARTED',color:'#9aa7ff',bodies:[]};RINGS.push(ring);}
-      ring.n=(ring.n||0)+1;
-      (ring.planets=ring.planets||[]).push(e.name);
-      b={name:e.name,img:'?',desc:'New body detected. Not yet on the charts.',dormant:false,
-         match:e.name,ring,ri:RINGS.length-1,uncharted:true,
-         ang:Math.random()*6.28,idx:ring.n-1,speed:0.00006,r:5,x:0,y:0,
-         col:PCOLS[ring.n%PCOLS.length],rtilt:(ring.n%10)/10*Math.PI};
-      bodies.push(b);
-    }
-    b.live={running:e.state==='running',cpu:e.cpu,mem:e.mem,status:e.status,count:1,
-      alert:e.alert||'ok',reason:e.reason||'',health:e.health||'none',restart:e.restart||0,oom:!!e.oom,exit:e.exit||0};
-  }
   liveTs=new Date(data.ts);
   const up=entries.filter(e=>e.state==='running').length;
   alertSummary={critical:0,warn:0};
@@ -582,8 +565,17 @@ function applyLive(data){
     if(a==='critical'||a==='down')alertSummary.critical++;
     else if(a==='warn')alertSummary.warn++;
   }
+  // an unreachable docker host is a galaxy-level event, not a container alert
+  const dark=hostStatus.filter(h=>!h.reachable);
+  alertSummary.critical+=dark.length;
   document.getElementById('cnum').textContent=entries.length;
-  document.getElementById('sline').textContent=up+' up · '+(entries.length-up)+' down';
+  const perHost=hostStatus.length
+    ? hostStatus.map(h=>h.id+':'+(h.reachable?h.containers:'dark')).join(' · ')
+    : HOSTS.map(h=>h.id).join(' · ');
+  document.getElementById('sline').textContent=up+' up · '+(entries.length-up)+' down · '+perHost;
+  const sub=document.getElementById('subtitle');
+  if(sub)sub.textContent='container galaxy · '+RINGS.length+' star systems · '
+    +HOSTS.length+' singularit'+(HOSTS.length>1?'ies':'y')+' · '+HOSTS.map(h=>h.id).join(' + ');
   const alertText=alertSummary.critical
     ? '<span style="color:var(--red)">✹ '+alertSummary.critical+' critical alert'+(alertSummary.critical>1?'s':'')+'</span>'
     : (alertSummary.warn?'<span style="color:var(--orange)">◆ '+alertSummary.warn+' warning'+(alertSummary.warn>1?'s':'')+'</span>'
@@ -595,7 +587,13 @@ async function poll(){
   try{const r=await fetch('telemetry.json',{cache:'no-store'});
       if(r.ok) applyLive(await r.json());}catch(e){}
 }
-poll();setInterval(poll,60000);
+// lore.json first — without it every container lands in UNCHARTED, which still
+// renders, just without the prose. Telemetry is what makes the world exist.
+(async()=>{
+  try{const r=await fetch('lore.json',{cache:'no-store'});if(r.ok)LORE=await r.json();}catch(e){}
+  await poll();
+  setInterval(poll,60000);
+})();
 
 // warp intro
 let warp=(reduced||location.hash==='#still'||kioskMode)?0:1;
@@ -641,46 +639,72 @@ function frame(t){
   const OX=CX+panX,OY=CY+panY; // camera origin (pan)
   ctx.globalAlpha=fade;
 
-  // per-system telemetry totals (cheap: ~65 iterations)
+  // per-system and per-host telemetry totals (cheap: ~80 iterations)
   let galMem=0,galCpu=0;
   for(const ring of RINGS){ring.mem=0;ring.cpu=0;ring.alive=0;ring.alert='ok';ring.alerts=0;}
+  for(const h of HOSTS){h.mem=0;h.cpu=0;h.bodies=0;h.alerts=0;}
   for(const b of bodies){
     const m=b.live?b.live.mem:30,c=b.live?b.live.cpu:0;
     b.ring.mem+=m;b.ring.cpu+=c;galMem+=m;galCpu+=c;
+    const h=hostOf(b.host);
+    if(h){h.mem+=m;h.cpu+=c;h.bodies++;}
     if(!(b.live?!b.live.running:b.dormant))b.ring.alive++;
     const a=bodyAlert(b);
-    if(a!=='ok'){b.ring.alert=worse(b.ring.alert,a);b.ring.alerts++;}
+    if(a!=='ok'){b.ring.alert=worse(b.ring.alert,a);b.ring.alerts++;if(h)h.alerts++;}
   }
-  BH.live={running:true,cpu:galCpu,mem:galMem,status:'devouring '+bodies.length+' bodies across '+RINGS.length+' systems',count:1};
 
-  // ===== BLACK HOLE — the Orange Pi singularity. Dominates its suns; size ∝ total RAM it devours =====
-  const bhR=(26+Math.sqrt(galMem||1500)*0.55)*zoom;
-  let g=ctx.createRadialGradient(OX,OY,bhR*0.4,OX,OY,bhR*2.6);
-  g.addColorStop(0,'rgba(255,158,100,0)');g.addColorStop(.45,'rgba(255,158,100,.5)');
-  g.addColorStop(.62,'rgba(181,140,255,.28)');g.addColorStop(1,'rgba(181,140,255,0)');
-  ctx.fillStyle=g;ctx.beginPath();ctx.arc(OX,OY,bhR*2.6,0,7);ctx.fill();
-  // accretion disk: tilted glowing ellipse, slowly precessing (Interstellar on a budget)
-  ctx.save();ctx.translate(OX,OY);ctx.rotate(-0.3+0.06*Math.sin(t*0.0002));
-  ctx.strokeStyle='rgba(255,170,110,.28)';ctx.lineWidth=bhR*0.5;
-  ctx.beginPath();ctx.ellipse(0,0,bhR*1.85,bhR*0.6,0,0,7);ctx.stroke();
-  ctx.strokeStyle='rgba(255,210,160,.5)';ctx.lineWidth=bhR*0.16;
-  ctx.beginPath();ctx.ellipse(0,0,bhR*1.7,bhR*0.5,0,0,7);ctx.stroke();
-  ctx.restore();
-  // event horizon + photon ring
-  ctx.fillStyle='#02030a';ctx.beginPath();ctx.arc(OX,OY,bhR,0,7);ctx.fill();
-  ctx.strokeStyle='rgba(255,225,190,.95)';ctx.lineWidth=Math.max(1.5,bhR*0.05);
-  ctx.beginPath();ctx.arc(OX,OY,bhR*1.04,0,7);ctx.stroke();
-  if(hovered===BH){
-    ctx.strokeStyle='rgba(255,158,100,.5)';ctx.lineWidth=2;
-    ctx.beginPath();ctx.arc(OX,OY,bhR*1.35,0,7);ctx.stroke();
+  // ===== SINGULARITIES — one per docker host. Size ∝ the RAM that host devours =====
+  // Two hosts = a binary system: the Orange Pi and the OptiPlex that keeps stealing its workloads.
+  const bhRof=h=>(20+Math.sqrt(h.mem||1500)*0.5)*zoom;
+  for(const h of HOSTS){
+    const dark=(hostStatus.find(s=>s.id===h.id)||{reachable:true}).reachable===false;
+    h.x=OX+h.ux*minWH*zoom;h.y=OY+h.uy*minWH*zoom;
+    h.live={running:!dark,cpu:h.cpu,mem:h.mem,count:1,
+      alert:dark?'critical':'ok',reason:dark?'host unreachable — telemetry is stale':'',
+      status:dark?'DARK — poller cannot reach this host'
+                 :'devouring '+h.bodies+' bodies across '+RINGS.filter(r=>r.host===h.id).length+' systems'};
+    const bhR=bhRof(h),X=h.x,Y=h.y;
+    const tint=dark?'255,107,107':(h.id==='46'?'255,158,100':'110,231,255');
+    let g=ctx.createRadialGradient(X,Y,bhR*0.4,X,Y,bhR*2.6);
+    g.addColorStop(0,`rgba(${tint},0)`);g.addColorStop(.45,`rgba(${tint},.5)`);
+    g.addColorStop(.62,'rgba(181,140,255,.28)');g.addColorStop(1,'rgba(181,140,255,0)');
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(X,Y,bhR*2.6,0,7);ctx.fill();
+    // accretion disk: tilted glowing ellipse, slowly precessing (Interstellar on a budget)
+    ctx.save();ctx.translate(X,Y);ctx.rotate(-0.3+0.06*Math.sin(t*0.0002+(h.id==='46'?0:2)));
+    ctx.strokeStyle=`rgba(${tint},.28)`;ctx.lineWidth=bhR*0.5;
+    ctx.beginPath();ctx.ellipse(0,0,bhR*1.85,bhR*0.6,0,0,7);ctx.stroke();
+    ctx.strokeStyle=`rgba(${tint},.5)`;ctx.lineWidth=bhR*0.16;
+    ctx.beginPath();ctx.ellipse(0,0,bhR*1.7,bhR*0.5,0,0,7);ctx.stroke();
+    ctx.restore();
+    // event horizon + photon ring
+    ctx.fillStyle='#02030a';ctx.beginPath();ctx.arc(X,Y,bhR,0,7);ctx.fill();
+    ctx.strokeStyle=dark?'rgba(255,107,107,.95)':'rgba(255,225,190,.95)';
+    ctx.lineWidth=Math.max(1.5,bhR*0.05);
+    ctx.beginPath();ctx.arc(X,Y,bhR*1.04,0,7);ctx.stroke();
+    if(hovered===h){
+      ctx.strokeStyle=`rgba(${tint},.5)`;ctx.lineWidth=2;
+      ctx.beginPath();ctx.arc(X,Y,bhR*1.35,0,7);ctx.stroke();
+    }
+    ctx.fillStyle=`rgba(${tint},.9)`;
+    ctx.font=`700 ${Math.max(10,bhR*.5)}px ui-monospace,monospace`;
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(h.glyph||'?',X,Y+1);
+    ctx.fillStyle=dark?'rgba(255,107,107,.9)':'rgba(125,135,156,.8)';
+    ctx.font=`${Math.max(8,base*.15)}px ui-monospace,monospace`;
+    ctx.fillText(h.label+(dark?' · DARK':''),X,Y+bhR*1.7+12);
+    ctx.fillStyle='rgba(125,135,156,.55)';
+    ctx.font=`${Math.max(7,base*.12)}px ui-monospace,monospace`;
+    ctx.fillText(h.bodies+' bodies · '+Math.round(h.mem)+' MB',X,Y+bhR*1.7+25);
   }
-  ctx.fillStyle='rgba(255,158,100,.9)';
-  ctx.font=`700 ${Math.max(10,bhR*.5)}px ui-monospace,monospace`;
-  ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillText('π',OX,OY+1);
-  ctx.fillStyle='rgba(125,135,156,.8)';
-  ctx.font=`${Math.max(8,base*.15)}px ui-monospace,monospace`;
-  ctx.fillText('ORANGE PI · SINGULARITY',OX,OY+bhR*1.7+12);
+  // the gravitational bridge: the two hosts are one system, and one is eating the other
+  if(HOSTS.length===2){
+    const [a,c]=HOSTS;
+    ctx.save();ctx.globalAlpha=fade*0.22;
+    ctx.strokeStyle='rgba(181,140,255,.9)';ctx.lineWidth=Math.max(1,2*zoom);
+    ctx.setLineDash([6*zoom,10*zoom]);ctx.lineDashOffset=-t*0.02;
+    ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(c.x,c.y);ctx.stroke();
+    ctx.restore();
+  }
 
   // ===== STAR SYSTEMS — one sun per theme, orbiting the singularity =====
   const hovPrev=hovered; // last frame's hover — used to freeze the planet under the cursor
@@ -724,20 +748,26 @@ function frame(t){
     ctx.fillText((ring.alerts?'✹ '+ring.alerts+' alerts · ':'')+ring.n+' bodies · '+Math.round(ring.mem)+' MB',ring.sx,ring.sy+Math.max(ring.sunR*2.2,ring.sysR*Math.min(zoom,1))+28);
   });
 
-  // ===== WHITE DWARF — the graveyard. Dead & dormant bodies migrate here =====
-  const wdX=OX+WD.ux*minWH*zoom,wdY=OY+WD.uy*minWH*zoom;
-  let graveN=0;for(const b of bodies)if((b.grave||0)>0.5)graveN++;
-  const wdR=Math.min(4+graveN*1.4,11)*zoom;
-  let wg=ctx.createRadialGradient(wdX,wdY,0,wdX,wdY,wdR*3);
-  wg.addColorStop(0,'#fff');wg.addColorStop(.25,'#dfe8ff');wg.addColorStop(1,'rgba(223,232,255,0)');
-  ctx.fillStyle=wg;ctx.beginPath();ctx.arc(wdX,wdY,wdR*3,0,7);ctx.fill();
-  ctx.fillStyle='rgba(125,135,156,.9)';
-  ctx.font=`${Math.max(8,base*.14)}px ui-monospace,monospace`;
-  ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillText('WHITE DWARF · THE GRAVEYARD',wdX,wdY+wdR*3+10);
-  ctx.fillStyle='rgba(125,135,156,.55)';
-  ctx.font=`${Math.max(7,base*.11)}px ui-monospace,monospace`;
-  ctx.fillText(graveN?graveN+' bodies in mourning orbit':'no casualties — for now',wdX,wdY+wdR*3+23);
+  // ===== WHITE DWARFS — one graveyard per host. Dead & dormant bodies migrate to their own. =====
+  for(const h of HOSTS){
+    h.wdx=OX+h.wux*minWH*zoom;h.wdy=OY+h.wuy*minWH*zoom;
+    h.graveN=0;
+  }
+  for(const b of bodies)if((b.grave||0)>0.5){const h=hostOf(b.host);if(h)h.graveN++;}
+  for(const h of HOSTS){
+    const wdX=h.wdx,wdY=h.wdy,graveN=h.graveN;
+    const wdR=Math.min(4+graveN*1.4,11)*zoom;
+    let wg=ctx.createRadialGradient(wdX,wdY,0,wdX,wdY,wdR*3);
+    wg.addColorStop(0,'#fff');wg.addColorStop(.25,'#dfe8ff');wg.addColorStop(1,'rgba(223,232,255,0)');
+    ctx.fillStyle=wg;ctx.beginPath();ctx.arc(wdX,wdY,wdR*3,0,7);ctx.fill();
+    ctx.fillStyle='rgba(125,135,156,.9)';
+    ctx.font=`${Math.max(8,base*.14)}px ui-monospace,monospace`;
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('WHITE DWARF · '+h.id.toUpperCase()+' GRAVEYARD',wdX,wdY+wdR*3+10);
+    ctx.fillStyle='rgba(125,135,156,.55)';
+    ctx.font=`${Math.max(7,base*.11)}px ui-monospace,monospace`;
+    ctx.fillText(graveN?graveN+' bodies in mourning orbit':'no casualties — for now',wdX,wdY+wdR*3+23);
+  }
 
   for(const b of bodies){
     // orbital velocity scales with live CPU: busy containers visibly race their orbit
@@ -758,8 +788,9 @@ function frame(t){
       hx=ring.sx+Math.cos(b.ang)*R;hy=ring.sy+Math.sin(b.ang)*R;
     }
     if(b.grave>0.001){
+      const gh=hostOf(b.host)||{wdx:OX,wdy:OY};
       const gR=minWH*zoom*(0.045+0.02*(b.idx%4));
-      const gx=wdX+Math.cos(b.ang*0.5+b.idx)*gR,gy=wdY+Math.sin(b.ang*0.5+b.idx)*gR;
+      const gx=gh.wdx+Math.cos(b.ang*0.5+b.idx)*gR,gy=gh.wdy+Math.sin(b.ang*0.5+b.idx)*gR;
       const e=b.grave*b.grave*(3-2*b.grave);
       b.x=hx+(gx-hx)*e;b.y=hy+(gy-hy)*e;
     }else{b.x=hx;b.y=hy;}
@@ -779,7 +810,7 @@ function frame(t){
       if(Math.hypot(mouse.x-ring.sx,mouse.y-ring.sy)<Math.max(ring.sunR*1.6,14)){
         if(!ring.sb)ring.sb={star:true,ring};
         ring.sb.name=ring.name;ring.sb.x=ring.sx;ring.sb.y=ring.sy;
-        ring.sb.desc=STARLORE[ring.name]||'A sun of the KITTLERVERSE.';
+        ring.sb.desc=ring.lore||'A sun of the KITTLERVERSE.';
         ring.sb.live={running:ring.alive===ring.n,mem:ring.mem,cpu:ring.cpu,
           status:ring.alive+'/'+ring.n+' planets in stable orbit',count:1,
           alert:ring.alert,reason:ring.alerts?ring.alerts+' active alert'+(ring.alerts>1?'s':''):''};
@@ -787,7 +818,11 @@ function frame(t){
       }
     }
   }
-  if(hoverActive&&!hovered&&Math.hypot(mouse.x-OX,mouse.y-OY)<bhR*1.15){BH.x=OX;BH.y=OY;hovered=BH;}
+  if(hoverActive&&!hovered){
+    for(const h of HOSTS){
+      if(Math.hypot(mouse.x-h.x,mouse.y-h.y)<bhRof(h)*1.15){hovered=h;break;}
+    }
+  }
 
   for(const b of bodies){
     if(!b.vis||b.vis<0.02)continue;
