@@ -20,66 +20,78 @@
 
   /* header */
   header{position:relative;z-index:2;display:flex;align-items:flex-end;justify-content:space-between;
-         padding:22px 34px 8px;height:138px;box-sizing:border-box}
-  h1{margin:0;font-size:28px;font-weight:700;letter-spacing:.35em;
+         padding:18px 30px 6px;height:118px;box-sizing:border-box}
+  h1{margin:0;font-size:26px;font-weight:700;letter-spacing:.35em;
      text-shadow:0 0 18px rgba(110,231,255,.5)}
   h1 b{color:var(--cyan);font-weight:700}
-  #sub{margin:6px 0 0;font-size:13px;letter-spacing:.18em;color:var(--dim);text-transform:uppercase}
-  #hdr-r{text-align:right;font-size:13px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;line-height:1.7}
-  #clock{font-size:40px;letter-spacing:.08em;color:var(--ink);text-shadow:0 0 14px rgba(232,236,245,.35)}
-  #upline .n{color:var(--green);font-size:26px;text-shadow:0 0 14px rgba(94,234,141,.6)}
+  #sub{margin:6px 0 0;font-size:12px;letter-spacing:.18em;color:var(--dim);text-transform:uppercase}
+  #hdr-r{text-align:right;font-size:12px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;line-height:1.7}
+  #clock{font-size:36px;letter-spacing:.08em;color:var(--ink);text-shadow:0 0 14px rgba(232,236,245,.35)}
+  #upline .n{color:var(--green);font-size:24px;text-shadow:0 0 14px rgba(94,234,141,.6)}
   #upline.warn .n{color:var(--red);text-shadow:0 0 14px rgba(255,107,107,.6)}
   #live{color:var(--green)}
   #live::before{content:'● ';animation:pulse 3s ease-in-out infinite;display:inline-block}
   @keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
 
-  /* systems grid */
-  #grid{position:relative;z-index:2;display:grid;grid-template-columns:repeat(3,1fr);
-        grid-template-rows:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) 96px;
-        gap:12px 16px;padding:8px 34px 12px;height:calc(100vh - 148px);box-sizing:border-box}
+  /* two lobes side by side — one docker host each */
+  #board{position:relative;z-index:2;display:grid;gap:10px 16px;
+         padding:4px 30px 10px;height:calc(100vh - 126px);box-sizing:border-box;
+         grid-template-rows:minmax(0,1fr) 92px}
+  #lobes{display:grid;gap:16px;min-height:0}
+  .lobe{display:grid;grid-template-rows:26px minmax(0,1fr);gap:8px;min-height:0}
+  .lobehd{display:flex;align-items:center;gap:12px;font-size:13px;letter-spacing:.24em;
+          text-transform:uppercase;color:var(--dim);border-bottom:1px solid rgba(125,135,156,.22);
+          padding-bottom:5px}
+  .lobehd .glyph{font-size:18px;font-weight:700}
+  .lobehd .tot{margin-left:auto;color:var(--ink);letter-spacing:.1em}
+  .lobehd.dark{color:var(--red);border-color:rgba(255,107,107,.5);animation:pulse 1.6s ease-in-out infinite}
+  .cards{display:grid;gap:8px;grid-auto-rows:minmax(0,1fr);min-height:0}
+
   .card{position:relative;border:1px solid rgba(125,135,156,.22);background:rgba(10,15,30,.82);
-        padding:11px 18px 10px;overflow:hidden;min-height:0;display:flex;flex-direction:column;justify-content:space-between;
+        padding:7px 14px 6px;overflow:hidden;min-height:0;display:flex;flex-direction:column;justify-content:space-between;
         transition:transform .9s cubic-bezier(.2,.8,.2,1),border-color .9s,box-shadow .9s,background .9s;
         will-change:transform}
   .card>div:first-child{min-height:0;overflow:hidden}
   .card>div:last-child{flex:none}
-  .card .top{display:flex;align-items:center;gap:14px}
-  .sun{width:19px;height:19px;border-radius:50%;flex:none;
+  .card .top{display:flex;align-items:center;gap:10px}
+  .sun{width:14px;height:14px;border-radius:50%;flex:none;
        animation:sunpulse 4s ease-in-out infinite;will-change:transform,opacity}
   @keyframes sunpulse{0%,100%{transform:scale(1);opacity:.85}50%{transform:scale(1.18);opacity:1}}
-  .card h2{margin:0;font-size:19px;letter-spacing:.22em;font-weight:700}
-  .card .mid{font-size:12.5px;letter-spacing:.1em;color:var(--dim);text-transform:uppercase;line-height:1.6;margin-top:5px}
+  .card h2{margin:0;font-size:15px;letter-spacing:.18em;font-weight:700}
+  .card .mid{font-size:11px;letter-spacing:.1em;color:var(--dim);text-transform:uppercase;margin-left:auto}
   .card .mid b{color:var(--ink);font-weight:400}
-  .blist{margin-top:7px;font-size:13px;letter-spacing:.03em;line-height:1.72;color:var(--ink);
-         columns:2;column-gap:18px;overflow:hidden}
+  .blist{margin-top:4px;font-size:12px;letter-spacing:.02em;line-height:1.55;color:var(--ink);
+         columns:2;column-gap:16px;overflow:hidden}
+  .blist.c3{columns:3}
+  .blist.c4{columns:4}
   .blist div{break-inside:avoid;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .blist .ok{color:var(--green)}
   .blist .bad{color:var(--red);animation:pulse 1.6s ease-in-out infinite}
   .blist .zz{color:var(--dim);opacity:.6}
-  .blist .mb{color:var(--dim);float:right;font-size:11.5px}
-  .blist.dense{font-size:12px;line-height:1.5}
-  .blist.dense .mb{font-size:10.5px}
-  .cpu{height:5px;background:rgba(125,135,156,.18);margin-top:7px;overflow:hidden}
+  .blist .mb{color:var(--dim);float:right;font-size:10.5px}
+  .cpu{height:4px;background:rgba(125,135,156,.18);margin-top:4px;overflow:hidden}
   .cpu i{display:block;height:100%;width:0%;transition:width 1.4s ease;box-shadow:0 0 8px currentColor;background:currentColor}
-  .foot{display:flex;justify-content:space-between;font-size:12px;letter-spacing:.12em;
-        color:var(--dim);text-transform:uppercase;margin-top:7px}
-  .card.spot{transform:scale(1.035);background:rgba(10,16,32,.85);z-index:3}
+  .foot{display:flex;justify-content:space-between;font-size:10.5px;letter-spacing:.12em;
+        color:var(--dim);text-transform:uppercase;margin-top:4px}
+  .card.spot{transform:scale(1.02);background:rgba(10,16,32,.85);z-index:3}
   .card.alert{border-color:rgba(255,107,107,.65);animation:alarmglow 2.2s ease-in-out infinite}
   @keyframes alarmglow{0%,100%{box-shadow:0 0 10px rgba(255,107,107,.15)}50%{box-shadow:0 0 26px rgba(255,107,107,.5)}}
-  .badge{position:absolute;top:10px;right:12px;font-size:12px;letter-spacing:.25em;color:var(--red);
+  .card.alert .mid{margin-right:76px}
+  .badge{position:absolute;top:6px;right:10px;font-size:10.5px;letter-spacing:.25em;color:var(--red);
          text-transform:uppercase;animation:pulse 1.6s ease-in-out infinite}
 
   /* row dossier strips */
-  .rowstrip{display:flex;align-items:center;gap:16px;box-sizing:border-box;min-height:0;overflow:hidden;
-            padding:10px 18px;border:1px solid rgba(110,231,255,.14);background:rgba(6,9,18,.72)}
-  .rowstrip .dot{width:12px;height:12px;border-radius:50%;flex:none;animation:sunpulse 3s ease-in-out infinite}
+  #strips{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;min-height:0}
+  .rowstrip{display:flex;align-items:center;gap:14px;box-sizing:border-box;min-height:0;overflow:hidden;
+            padding:9px 16px;border:1px solid rgba(110,231,255,.14);background:rgba(6,9,18,.72)}
+  .rowstrip .dot{width:11px;height:11px;border-radius:50%;flex:none;animation:sunpulse 3s ease-in-out infinite}
   .rowstrip .dos{opacity:1;transition:opacity .6s ease;min-width:0}
   .rowstrip .dos.fade{opacity:0}
-  .rowstrip .nm{font-size:16px;letter-spacing:.08em;color:var(--cyan);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .rowstrip .nm em{font-style:normal;color:var(--dim);font-size:11.5px;letter-spacing:.22em;text-transform:uppercase;margin-left:14px}
-  .rowstrip .ds{font-size:12.5px;color:var(--ink);margin-top:3px;line-height:1.35;overflow:hidden;
+  .rowstrip .nm{font-size:15px;letter-spacing:.08em;color:var(--cyan);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rowstrip .nm em{font-style:normal;color:var(--dim);font-size:11px;letter-spacing:.22em;text-transform:uppercase;margin-left:12px}
+  .rowstrip .ds{font-size:12px;color:var(--ink);margin-top:3px;line-height:1.35;overflow:hidden;
                 display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-  .rowstrip .st{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;margin-top:3px;color:var(--green)}
+  .rowstrip .st{font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin-top:3px;color:var(--green)}
   .rowstrip .st.bad{color:var(--red)}
 </style>
 <div class="stars"><i id="st1"></i><i id="st2"></i></div>
@@ -87,7 +99,7 @@
 <header>
   <div>
     <h1>KITTLER<b>VERSE</b></h1>
-    <p id="sub">OPS BOARD · 9 STAR SYSTEMS · ORANGE PI 5</p>
+    <p id="sub">OPS BOARD · SCANNING…</p>
   </div>
   <div id="hdr-r">
     <div id="clock">--:--:--</div>
@@ -95,9 +107,16 @@
     <div id="live">LIVE TELEMETRY <span id="sync"></span></div>
   </div>
 </header>
-<div id="grid"></div>
+<div id="board">
+  <div id="lobes"></div>
+  <div id="strips"></div>
+</div>
 <script>
-const RINGS=[{"name":"AI CORE","color":"#6ee7ff","bodies":[{"n":"claude-terminal","d":"The Skippy Console. A web terminal where Claude, Gemini and Codex do sysadmin work around the clock.","dormant":false,"prefix":null},{"n":"claude-worker","d":"Headless Claude. Builds dashboards while nobody watches. Unaware it lives in a container.","dormant":false,"prefix":null},{"n":"claude-portal","d":"Front door to the machine cult.","dormant":false,"prefix":null},{"n":"claude-upload","d":"File-drop endpoint for feeding the AIs.","dormant":false,"prefix":null},{"n":"claude-syncthing","d":"Mirrors the AI brain between laptop and mothership. No thought is ever lost.","dormant":false,"prefix":null},{"n":"cockpit","d":"Black-box recorder for every conversation with the machines. Semantic search included.","dormant":false,"prefix":null},{"n":"chatgpt-site-browser","d":"A browser that browses so I don’t have to.","dormant":false,"prefix":null},{"n":"whatsapp-mcp-collector","d":"Lets the AI read WhatsApp. Nothing ominous about that at all.","dormant":false,"prefix":null}]},{"name":"TRADING FLOOR","color":"#5eea8d","bodies":[{"n":"stock-analysis-api","d":"Technical + fundamental analysis of B3 stocks, as an API.","dormant":false,"prefix":null},{"n":"stock-analysis-mcp","d":"Plugs the stock engine straight into the AI. The robot picks the trades.","dormant":false,"prefix":null},{"n":"acoes-treemap","d":"Live portfolio treemap on a dedicated 1080p wall display. Bloomberg terminal at home, sort of.","dormant":false,"prefix":null}]},{"name":"MEDIA CARTEL","color":"#ff6b6b","bodies":[{"n":"plexms","d":"Plex. The reason the household tolerates the rest of this system.","dormant":false,"prefix":null},{"n":"sonarr","d":"TV acquisition automaton. It hunts, so I may feast.","dormant":false,"prefix":null},{"n":"radarr","d":"Same, but movies.","dormant":false,"prefix":null},{"n":"prowlarr","d":"The cartel’s phone book.","dormant":false,"prefix":null},{"n":"qbittorrent","d":"Delivery truck, torrent flavor.","dormant":false,"prefix":null},{"n":"sabnzbd","d":"Delivery truck, usenet flavor.","dormant":false,"prefix":null},{"n":"overseerr","d":"Family requests content like it’s room service.","dormant":false,"prefix":null},{"n":"tautulli","d":"Knows exactly who watched what, and how much they skipped.","dormant":false,"prefix":null},{"n":"metube","d":"Point at video, receive file.","dormant":false,"prefix":null},{"n":"legendas","d":"AI subtitle translator. Wakes on schedule, does its job, exits 0. A lifestyle.","dormant":true,"prefix":null}]},{"name":"COMMS ARRAY","color":"#6ea8ff","bodies":[{"n":"cloudflared ×3","d":"Three Cloudflare tunnels, one per domain. Zero open ports to space.","dormant":false,"prefix":"cloudflared-"},{"n":"wireguard","d":"VPN. My phone is always, technically, at home.","dormant":false,"prefix":null},{"n":"meshcentral","d":"TeamViewer, but I own the server.","dormant":false,"prefix":null},{"n":"suporte-remoto-web","d":"Remote-support page for clients.","dormant":false,"prefix":null},{"n":"intellissh","d":"Web SSH with an AI copilot. Because of course.","dormant":false,"prefix":null},{"n":"chhoto-url","d":"Sovereign URL shortener.","dormant":false,"prefix":null},{"n":"gptwol","d":"Wake-on-LAN panel. Necromancy for PCs.","dormant":false,"prefix":null},{"n":"clipcascade","d":"Clipboard sync across every device I own.","dormant":false,"prefix":"clipcascade-"}]},{"name":"SCIENCE LAB","color":"#b58cff","bodies":[{"n":"ttrss","d":"RSS never died. It moved into my basement.","dormant":false,"prefix":null},{"n":"ttrss_postgres","d":"The basement’s filing cabinet.","dormant":false,"prefix":null},{"n":"hmobrss","d":"Builds RSS feeds for sites too rude to offer one.","dormant":false,"prefix":null},{"n":"flaresolverr","d":"Cloudflare-challenge negotiator for the scraper above.","dormant":false,"prefix":"hmobrss_flaresolverr"},{"n":"mercury","d":"Strips web pages to pure text. No ads survive.","dormant":false,"prefix":null},{"n":"libretranslate","d":"Self-hosted translation engine. The UN interpreter of the stack.","dormant":false,"prefix":null},{"n":"calibre-web","d":"Personal library and OPDS shelf for every reading device.","dormant":false,"prefix":null},{"n":"kosync","d":"Keeps reading position aligned across Kindle, Android and Linux.","dormant":false,"prefix":null}]},{"name":"BUSINESS OPS","color":"#ffd166","bodies":[{"n":"glpi","d":"ITSM helpdesk. Real tickets, real clients, real SLAs.","dormant":false,"prefix":null},{"n":"glpi-db","d":"Where the tickets sleep.","dormant":false,"prefix":null},{"n":"glpi-cron","d":"The helpdesk’s alarm clock.","dormant":false,"prefix":null},{"n":"ninja-app","d":"Generates the invoices that justify this entire star system.","dormant":false,"prefix":null},{"n":"ninja-web","d":"Invoice Ninja’s reception desk.","dormant":false,"prefix":null},{"n":"ninja-db","d":"Invoice Ninja’s memory.","dormant":false,"prefix":null},{"n":"ninja-redis","d":"Invoice Ninja’s caffeine.","dormant":false,"prefix":null}]},{"name":"CREW QUARTERS","color":"#ff9e64","bodies":[{"n":"cozinha","d":"Deploys recipes to the kitchen TV and builds a cooking playlist. Yes, the kitchen has a CI/CD pipeline.","dormant":false,"prefix":null},{"n":"shse-http","d":"Feeds the living-room TV photo slideshow.","dormant":false,"prefix":null},{"n":"radar-teatros","d":"Local theater listings. Culture, containerized.","dormant":false,"prefix":null}]},{"name":"SHIELDS & SENSORS","color":"#9aa7ff","bodies":[{"n":"vaultwarden","d":"All the passwords, none of the cloud.","dormant":false,"prefix":null},{"n":"dockhand","d":"The harbormaster of this madness.","dormant":false,"prefix":null},{"n":"dockhand-agent","d":"The harbormaster’s deckhand.","dormant":false,"prefix":null},{"n":"glances","d":"The system’s vital signs.","dormant":false,"prefix":null},{"n":"speedtest-tracker","d":"Evidence locker for when the ISP lies.","dormant":false,"prefix":null}]},{"name":"ENGINE ROOM","color":"#ff7847","bodies":[{"n":"n8n","d":"Automation brainstem. If it happens on a schedule, n8n did it — including inventorying this very galaxy, daily at 04:00.","dormant":false,"prefix":null},{"n":"watchtower","d":"Auto-updates every container while I sleep. What could go wrong.","dormant":false,"prefix":null}]}];
+'use strict';
+/* Ops Board — DOM + CSS only, zero canvas. Everything it knows comes from
+   telemetry.json (what exists, on which host) and lore.json (what to call it).
+   The inventory is NEVER hardcoded here: this file used to keep a hand-copied
+   duplicate of the galaxy's catalogue and it silently rotted for three weeks. */
 
 /* ---- starfield: generate box-shadows once ---- */
 function stars(el,n,size){
@@ -108,29 +127,100 @@ function stars(el,n,size){
 stars(document.getElementById('st1'),110,0);
 stars(document.getElementById('st2'),70,.5);
 
-/* ---- build grid ---- */
-const grid=document.getElementById('grid');
+let LORE={systems:[],bodies:{},moons:{},prefixes:[],hosts:[]};
+let SYSTEMS=[];            // [{id,host,sys,name,color,lore,keys:[planet names]}]
+let SYS={},hostStatus=[];
 const cards={},strips=[];
-RINGS.forEach((r,i)=>{
-  const el=document.createElement('div');el.className='card';
-  el.innerHTML=`<div><div class="top"><span class="sun" style="background:${r.color};box-shadow:0 0 18px ${r.color},0 0 40px ${r.color}55"></span>
-    <h2 style="color:${r.color}">${r.name}</h2></div>
-    <div class="mid"><b class="up">–</b>/<span class="tot">–</span> bodies · <b class="ram">–</b> MB</div>
-    <div class="blist${r.bodies.length>8?' dense':''}"></div></div>
-    <div><div class="cpu"><i style="color:${r.color}"></i></div>
-    <div class="foot"><span class="cpuv">CPU –%</span><span class="topc"></span></div></div>
-    <span class="badge" style="display:none">✹ ALERT</span>`;
-  grid.appendChild(el);cards[r.name]=el;
-});
-for(let c=0;c<3;c++){
-  const st=document.createElement('div');st.className='rowstrip';
-  st.innerHTML=`<div class="dot"></div><div class="dos">
-    <div class="nm">SCANNING…</div><div class="ds"></div><div class="st"></div></div>`;
-  grid.appendChild(st);strips.push(st);
+let worldKey='';
+
+function bodyLore(name){
+  const e=LORE.bodies[name];
+  if(e)return {sys:e.sys,desc:e.desc,dormant:!!e.dormant,label:name};
+  for(const p of (LORE.prefixes||[]))
+    if(name.startsWith(p.match))return {sys:p.sys,desc:p.desc,dormant:!!p.dormant,label:p.name};
+  return null;
+}
+function starMeta(name){
+  return LORE.systems.find(s=>s.name===name)||{name,color:'#9aa7ff',lore:'Not on any chart yet.'};
+}
+function hostMeta(id){
+  return (LORE.hosts||[]).find(h=>h.id===id)||{id,glyph:'?',label:id.toUpperCase()};
+}
+
+/* group telemetry into host → system → planet, exactly like the galaxy does */
+function group(containers){
+  const g=new Map(),hosts=[];
+  for(const c of containers){
+    const host=c.host||'46';
+    if(!hosts.includes(host))hosts.push(host);
+    const L=bodyLore(c.name);
+    const sys=L?L.sys:'UNCHARTED',key=L?L.label:c.name;
+    const sid=host+'|'+sys;
+    let s=g.get(sid);
+    if(!s){s={id:sid,host,sys,planets:new Map()};g.set(sid,s);}
+    let p=s.planets.get(key);
+    if(!p){p={key,desc:L?L.desc:'Not on the charts — add it to lore.json.',dormant:!!(L&&L.dormant),members:[]};s.planets.set(key,p);}
+    p.members.push(c);
+  }
+  return {groups:g,hosts};
+}
+
+/* rebuild the DOM only when the structure actually changes */
+function rebuild(groups,hosts){
+  const spread={};
+  for(const s of groups.values()){(spread[s.sys]=spread[s.sys]||new Set()).add(s.host);}
+  SYSTEMS=[...groups.values()].sort((a,b)=>a.id<b.id?-1:1).map(s=>{
+    const meta=starMeta(s.sys);
+    return {id:s.id,host:s.host,sys:s.sys,color:meta.color,lore:meta.lore,
+            name:s.sys+(spread[s.sys].size>1?' · '+s.host:''),
+            keys:[...s.planets.keys()].sort()};
+  });
+  const lobes=document.getElementById('lobes');
+  lobes.innerHTML='';
+  // a host with 10 systems needs more wall than a host with 6: give each lobe
+  // as many sub-columns as it takes to keep ~5 cards per column, and weight the
+  // lobe's width by that. Otherwise the busy host clips and the quiet one wastes space.
+  const colsOf={};
+  for(const hid of hosts)colsOf[hid]=Math.max(1,Math.ceil(SYSTEMS.filter(s=>s.host===hid).length/5));
+  lobes.style.gridTemplateColumns=hosts.map(h=>colsOf[h]+'fr').join(' ');
+  for(const hid of hosts){
+    const hm=hostMeta(hid);
+    const lobe=document.createElement('div');lobe.className='lobe';
+    lobe.innerHTML=`<div class="lobehd" data-host="${hid}">
+        <span class="glyph">${hm.glyph}</span><span>${hm.label}</span>
+        <span class="tot" data-tot="${hid}">–</span></div>
+      <div class="cards"></div>`;
+    const box=lobe.querySelector('.cards');
+    box.style.gridTemplateColumns='repeat('+colsOf[hid]+',1fr)';
+    for(const s of SYSTEMS.filter(x=>x.host===hid)){
+      const el=document.createElement('div');el.className='card';
+      const cols=s.keys.length>12?'c4':s.keys.length>6?'c3':'';
+      el.innerHTML=`<div><div class="top">
+          <span class="sun" style="background:${s.color};box-shadow:0 0 14px ${s.color},0 0 32px ${s.color}55"></span>
+          <h2 style="color:${s.color}">${s.sys}</h2>
+          <div class="mid"><b class="up">–</b>/<span class="tot">–</span> · <b class="ram">–</b> MB</div></div>
+          <div class="blist ${cols}"></div></div>
+        <div><div class="cpu"><i style="color:${s.color}"></i></div>
+        <div class="foot"><span class="cpuv">CPU –%</span><span class="topc"></span></div></div>
+        <span class="badge" style="display:none">✹ ALERT</span>`;
+      box.appendChild(el);cards[s.id]=el;
+    }
+    lobes.appendChild(lobe);
+  }
+  const sbox=document.getElementById('strips');
+  if(!strips.length){
+    for(let c=0;c<3;c++){
+      const st=document.createElement('div');st.className='rowstrip';
+      st.innerHTML=`<div class="dot"></div><div class="dos">
+        <div class="nm">SCANNING…</div><div class="ds"></div><div class="st"></div></div>`;
+      sbox.appendChild(st);strips.push(st);
+    }
+  }
+  document.getElementById('sub').textContent='OPS BOARD · '+SYSTEMS.length+' STAR SYSTEMS · '
+    +hosts.map(h=>hostMeta(h).label.split(' · ')[0]).join(' + ');
 }
 
 /* ---- telemetry ---- */
-let SYS={},uncharted=0;
 const NAVG=5;
 let HIST={};try{HIST=JSON.parse(localStorage.getItem('kv_hist')||'{}');}catch(e){}
 function pushHist(name,cpu){
@@ -138,109 +228,132 @@ function pushHist(name,cpu){
   h.push(cpu);while(h.length>NAVG)h.shift();
   return h.reduce((a,b)=>a+b,0)/h.length;
 }
-function match(name){
-  for(const r of RINGS)for(const b of r.bodies){
-    if(b.n===name)return[r,b];
-    if(b.prefix&&name.startsWith(b.prefix))return[r,b];
-  }
-  return null;
-}
+
 function applyLive(data){
-  const per={};for(const r of RINGS)per[r.name]={up:0,tot:0,ram:0,cpu:0,alerts:[],live:{}};
-  uncharted=0;let up=0,down=0,ram=0;
-  for(const c of data.containers){
-    const m=match(c.name);
-    if(c.state==='running')up++;else down++;
-    ram+=c.mem;
-    if(!m){uncharted++;continue;}
-    const[r,b]=m,p=per[r.name];
-    p.tot++;p.ram+=c.mem;p.cpu+=c.cpu;
-    if(c.state==='running')p.up++;
-    let bad=c.alert&&c.alert!=='ok'&&!b.dormant,reason=c.reason||c.alert;
-    // legendas: dormant que DEVE rodar diariamente — alerta se não sobe há 24h+
-    if(b.n==='legendas'&&c.state!=='running'){
-      const m=(c.status||'').match(/(\d+)\s+(hour|day|week|month)s?\s+ago/i);
-      if(m&&(m[2].toLowerCase()!=='hour'||+m[1]>=24)){bad=true;reason='sem rodar há '+m[1]+' '+m[2]+'(s)';}
+  hostStatus=Array.isArray(data.hosts)?data.hosts:[];
+  const {groups,hosts}=group(data.containers);
+  const wk=[...groups.keys()].sort().join('|')+'#'+
+    [...groups.values()].map(s=>s.id+':'+[...s.planets.keys()].sort().join(',')).sort().join('|');
+  if(wk!==worldKey){worldKey=wk;rebuild(groups,hosts);}
+
+  const per={},hostTot={};
+  for(const s of SYSTEMS)per[s.id]={up:0,tot:0,ram:0,cpu:0,cpuavg:0,alerts:[],live:{}};
+  let up=0,down=0,ram=0;
+  for(const s of groups.values()){
+    const p=per[s.id];if(!p)continue;
+    const ht=hostTot[s.host]=hostTot[s.host]||{up:0,tot:0,ram:0};
+    for(const pl of s.planets.values()){
+      let pmem=0,pcpu=0,running=true,bad=false,reason='',status='';
+      for(const c of pl.members){
+        if(c.state==='running')up++;else down++;
+        ram+=c.mem;ht.ram+=c.mem;ht.tot++;
+        if(c.state==='running')ht.up++;
+        pmem+=c.mem;pcpu+=c.cpu;status=status||c.status;
+        if(c.state!=='running')running=false;
+        if(c.alert&&c.alert!=='ok'&&!pl.dormant){bad=true;reason=reason||c.reason||c.alert;}
+        // legendas is dormant but MUST run daily — silence for 24h+ is an alert
+        if(pl.key==='legendas'&&c.state!=='running'){
+          const m=(c.status||'').match(/(\d+)\s+(hour|day|week|month)s?\s+ago/i);
+          if(m&&(m[2].toLowerCase()!=='hour'||+m[1]>=24)){bad=true;reason='sem rodar há '+m[1]+' '+m[2]+'(s)';}
+        }
+      }
+      p.tot++;p.ram+=pmem;p.cpu+=pcpu;if(running)p.up++;
+      const avg=pushHist(s.host+'|'+pl.key,pcpu);p.cpuavg+=avg;
+      if(bad)p.alerts.push(pl.key+': '+reason);
+      p.live[pl.key]={cpu:pcpu,avg,mem:pmem,status,running,bad,dormant:pl.dormant,
+                      desc:pl.desc,count:pl.members.length};
     }
-    if(bad)p.alerts.push(c.name+': '+reason);
-    const avg=pushHist(c.name,c.cpu);
-    p.cpuavg=(p.cpuavg||0)+avg;
-    p.live[b.n]={cpu:c.cpu,avg,mem:c.mem,status:c.status,running:c.state==='running',bad,dormant:b.dormant};
   }
   try{localStorage.setItem('kv_hist',JSON.stringify(HIST));}catch(e){}
+
+  // a host the poller cannot reach is the loudest alert on the board
+  for(const hs of hostStatus){
+    const hd=document.querySelector('.lobehd[data-host="'+hs.id+'"]');
+    if(hd)hd.classList.toggle('dark',!hs.reachable);
+  }
+  for(const [hid,t] of Object.entries(hostTot)){
+    const el=document.querySelector('[data-tot="'+hid+'"]');
+    const hs=hostStatus.find(h=>h.id===hid);
+    if(el)el.textContent=(hs&&!hs.reachable)?'DARK — POLLER CANNOT REACH':
+      t.up+'/'+t.tot+' up · '+t.ram.toFixed(0)+' MB';
+  }
+  const dark=hostStatus.filter(h=>!h.reachable).length;
   document.getElementById('nup').textContent=up;
   document.getElementById('ndown').textContent=down;
   document.getElementById('nram').textContent=ram.toFixed(0);
-  document.getElementById('upline').classList.toggle('warn',down>3);
+  document.getElementById('upline').classList.toggle('warn',down>3||dark>0);
   document.getElementById('sync').textContent='· '+new Date(data.ts).toLocaleTimeString();
-  for(const r of RINGS){
-    const p=per[r.name],el=cards[r.name];
+
+  for(const s of SYSTEMS){
+    const p=per[s.id],el=cards[s.id];if(!el)continue;
     el.querySelector('.up').textContent=p.up;
     el.querySelector('.tot').textContent=p.tot;
     el.querySelector('.ram').textContent=p.ram.toFixed(0);
-    const cav=p.cpuavg||0;
-    el.querySelector('.cpu i').style.width=Math.min(100,cav*2.2)+'%';
-    el.querySelector('.cpuv').textContent='CPU '+cav.toFixed(1)+'% · 5MIN';
+    el.querySelector('.cpu i').style.width=Math.min(100,p.cpuavg*2.2)+'%';
+    el.querySelector('.cpuv').textContent='CPU '+p.cpuavg.toFixed(1)+'% · 5MIN';
     let topN='',topC=-1;
     for(const[n,v]of Object.entries(p.live))if(v.running&&v.avg>topC){topC=v.avg;topN=n;}
     el.querySelector('.topc').textContent=topN?('top: '+topN):'';
-    el.querySelector('.blist').innerHTML=r.bodies.map(b=>{
-      const v=p.live[b.n];
+    el.querySelector('.blist').innerHTML=s.keys.map(k=>{
+      const v=p.live[k];
       const cls=!v?'zz':v.bad?'bad':v.running?'ok':(v.dormant?'zz':'bad');
       const mark=!v?'○':v.bad?'✹':v.running?'●':(v.dormant?'◌':'✹');
       const mb=v&&v.running?`<span class="mb">${v.mem.toFixed(0)} MB</span>`:'';
-      return `<div>${mb}<span class="${cls}">${mark}</span> ${b.n}</div>`;
+      return `<div>${mb}<span class="${cls}">${mark}</span> ${k}</div>`;
     }).join('');
     el.classList.toggle('alert',p.alerts.length>0);
     el.querySelector('.badge').style.display=p.alerts.length?'':'none';
   }
   SYS=per;
 }
+
 async function poll(){
   try{const r=await fetch('telemetry.json',{cache:'no-store'});
       if(r.ok)applyLive(await r.json());}catch(e){}
 }
-poll();setInterval(poll,60000);
+(async()=>{
+  try{const r=await fetch('lore.json',{cache:'no-store'});if(r.ok)LORE=await r.json();}catch(e){}
+  await poll();setInterval(poll,60000);
+})();
 
 /* ---- clock ---- */
 setInterval(()=>{document.getElementById('clock').textContent=
   new Date().toLocaleTimeString('pt-BR');},1000);
 
-/* ---- per-row dossier cyclers: alerted systems first, else round-robin ---- */
-function makeRowCycler(col){
-  const sys=[RINGS[col],RINGS[col+3],RINGS[col+6]].filter(Boolean);
+/* ---- dossier cyclers: each strip owns a slice of the systems, alerts first ---- */
+function makeCycler(col){
   const strip=strips[col],dos=strip.querySelector('.dos');
   let items=[],idx=-1;
-  function rebuild(){
-    const alerted=sys.filter(r=>SYS[r.name]&&SYS[r.name].alerts.length);
-    const pool=alerted.length?alerted:sys;
-    items=[];for(const r of pool)for(const b of r.bodies)items.push([r,b]);
+  function rebuildItems(){
+    const mine=SYSTEMS.filter((s,i)=>i%3===col);
+    const alerted=mine.filter(s=>SYS[s.id]&&SYS[s.id].alerts.length);
+    const pool=alerted.length?alerted:mine;
+    items=[];for(const s of pool)for(const k of s.keys)items.push([s,k]);
   }
-  function next(){
-    rebuild();if(!items.length)return;
+  return function next(){
+    rebuildItems();if(!items.length)return;
     dos.classList.add('fade');
     setTimeout(()=>{
       idx=(idx+1)%items.length;
-      const[r,b]=items[idx],p=SYS[r.name]||{live:{},alerts:[]},v=p.live[b.n];
-      for(const rr of sys)cards[rr.name].classList.remove('spot');
-      cards[r.name].classList.add('spot');
+      const[s,k]=items[idx],p=SYS[s.id]||{live:{},alerts:[]},v=p.live[k];
+      for(const ss of SYSTEMS)if(cards[ss.id])cards[ss.id].classList.remove('spot');
+      if(cards[s.id])cards[s.id].classList.add('spot');
       const dot=strip.querySelector('.dot');
-      dot.style.background=r.color;dot.style.boxShadow=`0 0 14px ${r.color}`;
-      dos.querySelector('.nm').innerHTML=`${b.n}<em>${r.name}</em>`;
-      dos.querySelector('.ds').textContent=b.d||'';
+      dot.style.background=s.color;dot.style.boxShadow=`0 0 14px ${s.color}`;
+      dos.querySelector('.nm').innerHTML=`${k}<em>${s.name}</em>`;
+      dos.querySelector('.ds').textContent=(v&&v.desc)||'';
       const st=dos.querySelector('.st');
       if(v){
         st.className='st'+(v.bad?' bad':'');
-        st.textContent=v.bad?('✹ '+(p.alerts.find(a=>a.startsWith(b.n))||'ALERT')):
-          v.running?`● ${v.status.toLowerCase()} · ${v.mem.toFixed(0)} MB · CPU ${v.cpu.toFixed(1)}% NOW · ${v.avg.toFixed(1)}% 5MIN`:
-          v.dormant?'● dormant — wakes on schedule':'● ADRIFT — '+v.status.toLowerCase();
+        st.textContent=v.bad?('✹ '+(p.alerts.find(a=>a.startsWith(k))||'ALERT')):
+          v.running?`● ${(v.status||'').toLowerCase()} · ${v.mem.toFixed(0)} MB · CPU ${v.cpu.toFixed(1)}% NOW · ${v.avg.toFixed(1)}% 5MIN`:
+          v.dormant?'● dormant — wakes on schedule':'● ADRIFT — '+(v.status||'').toLowerCase();
       }else{st.className='st';st.textContent='● no telemetry';}
       dos.classList.remove('fade');
     },600);
-  }
-  return next;
+  };
 }
 setTimeout(()=>{
-  for(let r=0;r<3;r++){const n=makeRowCycler(r);n();setInterval(n,8000);}
-},1500);
+  for(let c=0;c<3;c++){const n=makeCycler(c);n();setInterval(n,8000);}
+},1800);
 </script>
