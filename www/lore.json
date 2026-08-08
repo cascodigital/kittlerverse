@@ -1,0 +1,448 @@
+{
+ "systems": [
+  {
+   "name": "AI CORE",
+   "color": "#6ee7ff",
+   "lore": "The strange blue star the rest of the galaxy quietly orbits its opinions around. Three artificial minds live here and do the sysadmin work while the owner sleeps."
+  },
+  {
+   "name": "TRADING FLOOR",
+   "color": "#5eea8d",
+   "lore": "A green dwarf that flares violently between 10:00 and 17:00 B3 time, then goes eerily quiet."
+  },
+  {
+   "name": "MEDIA CARTEL",
+   "color": "#ff6b6b",
+   "lore": "The most massive star in the KITTLERVERSE. Officially an entertainment system; unofficially the reason the household tolerates everything else."
+  },
+  {
+   "name": "COMMS ARRAY",
+   "color": "#6ea8ff",
+   "lore": "Every signal that leaves or enters the galaxy passes through this star. Zero open ports to space — tunnels only."
+  },
+  {
+   "name": "SCIENCE LAB",
+   "color": "#b58cff",
+   "lore": "A quiet violet star where the written web is captured, stripped, translated and filed."
+  },
+  {
+   "name": "BUSINESS OPS",
+   "color": "#ffd166",
+   "lore": "The yellow star that pays for the whole galaxy. Tickets in, invoices out."
+  },
+  {
+   "name": "CREW QUARTERS",
+   "color": "#ff9e64",
+   "lore": "A warm little star for the humans: recipes on the kitchen TV, photos in the living room, theater listings."
+  },
+  {
+   "name": "SHIELDS & SENSORS",
+   "color": "#9aa7ff",
+   "lore": "Passwords, monitoring and evidence against lying ISPs. The galaxy’s immune system."
+  },
+  {
+   "name": "ENGINE ROOM",
+   "color": "#ff7847",
+   "lore": "Small, dim, and if it ever dies the entire galaxy stops on a schedule. n8n lives here."
+  }
+ ],
+ "bodies": {
+  "claude-terminal": {
+   "sys": "AI CORE",
+   "img": "claude-terminal:ttyd",
+   "desc": "The Skippy Console. A web terminal where Claude, Gemini and Codex do sysadmin work around the clock."
+  },
+  "claude-worker": {
+   "sys": "AI CORE",
+   "img": "claude-claude-worker",
+   "desc": "Headless Claude. Builds dashboards while nobody watches. Unaware it lives in a container."
+  },
+  "claude-portal": {
+   "sys": "AI CORE",
+   "img": "nginx:alpine",
+   "desc": "Front door to the machine cult."
+  },
+  "claude-upload": {
+   "sys": "AI CORE",
+   "img": "python:3.11-slim",
+   "desc": "File-drop endpoint for feeding the AIs."
+  },
+  "claude-syncthing": {
+   "sys": "AI CORE",
+   "img": "linuxserver/syncthing",
+   "desc": "Mirrors the AI brain between laptop and mothership. No thought is ever lost."
+  },
+  "cockpit": {
+   "sys": "AI CORE",
+   "img": "python:3.11-slim",
+   "desc": "Black-box recorder for every conversation with the machines. Semantic search included."
+  },
+  "chatgpt-site-browser": {
+   "sys": "AI CORE",
+   "img": "chatgpt-site-browser",
+   "desc": "A browser that browses so I don’t have to."
+  },
+  "claude-site-browser": {
+   "sys": "AI CORE",
+   "img": "claude-site-browser",
+   "desc": "Same trick, Claude flavor."
+  },
+  "gemini-site-browser": {
+   "sys": "AI CORE",
+   "img": "gemini-site-browser",
+   "desc": "Same trick, Gemini flavor."
+  },
+  "whatsapp-mcp-collector": {
+   "sys": "AI CORE",
+   "img": "whatsapp-mcp-server",
+   "desc": "Lets the AI read WhatsApp. Nothing ominous about that at all."
+  },
+  "stock-analysis-api": {
+   "sys": "TRADING FLOOR",
+   "img": "stock-service-stock-api",
+   "desc": "Technical + fundamental analysis of B3 stocks, as an API."
+  },
+  "stock-analysis-mcp": {
+   "sys": "TRADING FLOOR",
+   "img": "stock-service-stock-mcp",
+   "desc": "Plugs the stock engine straight into the AI. The robot picks the trades."
+  },
+  "plexms": {
+   "sys": "MEDIA CARTEL",
+   "img": "plexinc/pms-docker",
+   "desc": "Plex. The reason the household tolerates the rest of this system."
+  },
+  "sonarr": {
+   "sys": "MEDIA CARTEL",
+   "img": "linuxserver/sonarr",
+   "desc": "TV acquisition automaton. It hunts, so I may feast."
+  },
+  "radarr": {
+   "sys": "MEDIA CARTEL",
+   "img": "linuxserver/radarr",
+   "desc": "Same, but movies."
+  },
+  "prowlarr": {
+   "sys": "MEDIA CARTEL",
+   "img": "linuxserver/prowlarr",
+   "desc": "The cartel’s phone book."
+  },
+  "qbittorrent": {
+   "sys": "MEDIA CARTEL",
+   "img": "linuxserver/qbittorrent",
+   "desc": "Delivery truck, torrent flavor."
+  },
+  "sabnzbd": {
+   "sys": "MEDIA CARTEL",
+   "img": "linuxserver/sabnzbd",
+   "desc": "Delivery truck, usenet flavor."
+  },
+  "overseerr": {
+   "sys": "MEDIA CARTEL",
+   "img": "linuxserver/overseerr",
+   "desc": "Family requests content like it’s room service."
+  },
+  "tautulli": {
+   "sys": "MEDIA CARTEL",
+   "img": "linuxserver/tautulli",
+   "desc": "Knows exactly who watched what, and how much they skipped."
+  },
+  "metube": {
+   "sys": "MEDIA CARTEL",
+   "img": "alexta69/metube",
+   "desc": "Point at video, receive file."
+  },
+  "legendas": {
+   "sys": "MEDIA CARTEL",
+   "img": "subtitle-auto-translator",
+   "desc": "AI subtitle translator. Wakes on schedule, does its job, exits 0. A lifestyle.",
+   "dormant": true
+  },
+  "wireguard": {
+   "sys": "COMMS ARRAY",
+   "img": "wg-easy",
+   "desc": "VPN. My phone is always, technically, at home."
+  },
+  "meshcentral": {
+   "sys": "COMMS ARRAY",
+   "img": "meshcentral",
+   "desc": "TeamViewer, but I own the server."
+  },
+  "suporte-remoto-web": {
+   "sys": "COMMS ARRAY",
+   "img": "nginx:alpine",
+   "desc": "Remote-support page for clients."
+  },
+  "intellissh": {
+   "sys": "COMMS ARRAY",
+   "img": "clusterzx/intellissh",
+   "desc": "Web SSH with an AI copilot. Because of course."
+  },
+  "chhoto-url": {
+   "sys": "COMMS ARRAY",
+   "img": "chhoto-url",
+   "desc": "Sovereign URL shortener."
+  },
+  "gptwol": {
+   "sys": "COMMS ARRAY",
+   "img": "misterbabou/gptwol",
+   "desc": "Wake-on-LAN panel. Necromancy for PCs."
+  },
+  "ttrss": {
+   "sys": "SCIENCE LAB",
+   "img": "wangqiru/ttrss",
+   "desc": "RSS never died. It moved into my basement."
+  },
+  "ttrss_postgres": {
+   "sys": "SCIENCE LAB",
+   "img": "postgres:16-alpine",
+   "desc": "The basement’s filing cabinet."
+  },
+  "mercury": {
+   "sys": "SCIENCE LAB",
+   "img": "mercury-parser-api",
+   "desc": "Strips web pages to pure text. No ads survive."
+  },
+  "libretranslate": {
+   "sys": "SCIENCE LAB",
+   "img": "libretranslate",
+   "desc": "Self-hosted translation engine. The UN interpreter of the stack."
+  },
+  "calibre-web": {
+   "sys": "SCIENCE LAB",
+   "img": "linuxserver/calibre-web",
+   "desc": "Personal library and OPDS shelf for every reading device."
+  },
+  "kosync": {
+   "sys": "SCIENCE LAB",
+   "img": "koreader/kosync",
+   "desc": "Keeps reading position aligned across Kindle, Android and Linux."
+  },
+  "glpi": {
+   "sys": "BUSINESS OPS",
+   "img": "glpi-glpi",
+   "desc": "ITSM helpdesk. Real tickets, real clients, real SLAs."
+  },
+  "glpi-db": {
+   "sys": "BUSINESS OPS",
+   "img": "mariadb:11.8",
+   "desc": "Where the tickets sleep."
+  },
+  "glpi-cron": {
+   "sys": "BUSINESS OPS",
+   "img": "glpi-glpi-cron",
+   "desc": "The helpdesk’s alarm clock."
+  },
+  "ninja-app": {
+   "sys": "BUSINESS OPS",
+   "img": "invoiceninja:5",
+   "desc": "Generates the invoices that justify this entire star system."
+  },
+  "ninja-web": {
+   "sys": "BUSINESS OPS",
+   "img": "nginx:alpine",
+   "desc": "Invoice Ninja’s reception desk."
+  },
+  "ninja-db": {
+   "sys": "BUSINESS OPS",
+   "img": "mariadb:10.6",
+   "desc": "Invoice Ninja’s memory."
+  },
+  "ninja-redis": {
+   "sys": "BUSINESS OPS",
+   "img": "redis:alpine",
+   "desc": "Invoice Ninja’s caffeine."
+  },
+  "cozinha": {
+   "sys": "CREW QUARTERS",
+   "img": "cozinha",
+   "desc": "Deploys recipes to the kitchen TV and builds a cooking playlist. Yes, the kitchen has a CI/CD pipeline."
+  },
+  "shse-http": {
+   "sys": "CREW QUARTERS",
+   "img": "rampartfts/shse",
+   "desc": "Feeds the living-room TV photo slideshow."
+  },
+  "radar-teatros": {
+   "sys": "CREW QUARTERS",
+   "img": "nginx:alpine",
+   "desc": "Local theater listings. Culture, containerized."
+  },
+  "vaultwarden": {
+   "sys": "SHIELDS & SENSORS",
+   "img": "vaultwarden/server",
+   "desc": "All the passwords, none of the cloud."
+  },
+  "dockhand": {
+   "sys": "SHIELDS & SENSORS",
+   "img": "fnsys/dockhand",
+   "desc": "The harbormaster of this madness."
+  },
+  "dockhand-agent": {
+   "sys": "SHIELDS & SENSORS",
+   "img": "finsys/hawser",
+   "desc": "The harbormaster’s deckhand."
+  },
+  "glances": {
+   "sys": "SHIELDS & SENSORS",
+   "img": "nicolargo/glances",
+   "desc": "The system’s vital signs."
+  },
+  "mem-sampler": {
+   "sys": "SHIELDS & SENSORS",
+   "img": "docker:cli",
+   "desc": "Samples host RAM/swap every 5 min so nobody has to guess if the lag is real."
+  },
+  "n8n": {
+   "sys": "ENGINE ROOM",
+   "img": "n8nio/n8n",
+   "desc": "Automation brainstem. If it happens on a schedule, n8n did it — including inventorying this very galaxy, daily at 04:00."
+  },
+  "watchtower": {
+   "sys": "ENGINE ROOM",
+   "img": "nickfedor/watchtower",
+   "desc": "Auto-updates every container while I sleep. What could go wrong."
+  },
+  "galaxy-poller": {
+   "sys": "ENGINE ROOM",
+   "img": "docker:cli",
+   "desc": "Reads the whole fleet every minute and writes the telemetry this map runs on."
+  },
+  "galaxy-control": {
+   "sys": "ENGINE ROOM",
+   "img": "python:3.11-alpine",
+   "desc": "Lets a click here start, stop or restart a real container out there."
+  },
+  "galaxy-web": {
+   "sys": "ENGINE ROOM",
+   "img": "nginx:alpine",
+   "desc": "Serves this very map. A star system mapping itself — recursion the Elders would approve of."
+  },
+  "hmobrss_flaresolverr": {
+   "sys": "SCIENCE LAB",
+   "img": "flaresolverr",
+   "desc": "Cloudflare-challenge negotiator for the scraper next door."
+  },
+  "kokoro": {
+   "sys": "AI CORE",
+   "img": "kokoro-fastapi-cpu",
+   "desc": "Local text-to-speech. Gives the house a voice that costs nothing per word."
+  },
+  "filmes": {
+   "sys": "MEDIA CARTEL",
+   "img": "filmes-filmes",
+   "desc": "In-house film archive and rating engine. 909k IMDb titles, offline, opinionated."
+  },
+  "multi-scrobbler": {
+   "sys": "MEDIA CARTEL",
+   "img": "foxxmd/multi-scrobbler",
+   "desc": "Reports every track played to the scrobbling gods. Nothing is listened to in private."
+  },
+  "web-interno": {
+   "sys": "TRADING FLOOR",
+   "img": "nginx:1.29-alpine",
+   "desc": "Dispatcher for the 1080p wall: portfolio during market hours, Ops Board after the bell."
+  },
+  "snipeit": {
+   "sys": "BUSINESS OPS",
+   "img": "snipe/snipe-it",
+   "desc": "Asset inventory. Knows which laptop belongs to which client, and since when."
+  },
+  "snipeit-db": {
+   "sys": "BUSINESS OPS",
+   "img": "mariadb:11.4.7",
+   "desc": "Where the assets are counted."
+  },
+  "dawarich_app": {
+   "sys": "SCIENCE LAB",
+   "img": "freikin/dawarich",
+   "desc": "Self-hosted location history. Google Timeline without Google."
+  },
+  "dawarich_sidekiq": {
+   "sys": "SCIENCE LAB",
+   "img": "freikin/dawarich",
+   "desc": "Chews through the location backlog in the background."
+  },
+  "dawarich_db": {
+   "sys": "SCIENCE LAB",
+   "img": "postgis:14-3.5",
+   "desc": "Every place ever visited, in PostGIS."
+  },
+  "dawarich_redis": {
+   "sys": "SCIENCE LAB",
+   "img": "redis:7.0-alpine",
+   "desc": "The tracker's short-term memory."
+  },
+  "hmobrss": {
+   "sys": "SCIENCE LAB",
+   "img": "hmobrss-hmobrss",
+   "desc": "Builds RSS feeds for sites too rude to offer one."
+  },
+  "speedtest-tracker": {
+   "sys": "SHIELDS & SENSORS",
+   "img": "linuxserver/speedtest-tracker",
+   "desc": "Evidence locker for when the ISP lies."
+  }
+ },
+ "moons": {
+  "glpi-db": "glpi",
+  "glpi-cron": "glpi",
+  "ninja-web": "ninja-app",
+  "ninja-db": "ninja-app",
+  "ninja-redis": "ninja-app",
+  "ttrss_postgres": "ttrss",
+  "kosync": "calibre-web",
+  "snipeit-db": "snipeit",
+  "dawarich_db": "dawarich_app",
+  "dawarich_redis": "dawarich_app",
+  "dawarich_sidekiq": "dawarich_app"
+ },
+ "hosts": [
+  {
+   "id": "46",
+   "glyph": "π",
+   "label": "ORANGE PI · SINGULARITY",
+   "name": "orange pi 5 — the singularity",
+   "img": "RK3588 · 8× ARM64 cores · 8 GB LPDDR4X · NVMe 117 GB · Armbian",
+   "desc": "The original gravitational center of the KITTLERVERSE. A palm-sized board drawing about as much power as an LED bulb, running most of this galaxy. It does not orbit anything.",
+   "ux": -0.54,
+   "uy": 0.03,
+   "color": "#ff9e64"
+  },
+  {
+   "id": "dotpi",
+   "glyph": "δ",
+   "label": "DOTPI · COMPANION",
+   "name": "dotpi — the companion singularity",
+   "img": "Dell OptiPlex 7070 · 6 cores x86_64 · 16 GB · Ubuntu 26.04 bare metal · 192.168.2.102",
+   "desc": "The second singularity, captured in July 2026 when the Orange Pi ran out of RAM. Heavier, hungrier, and steadily pulling workloads out of its companion's orbit. The two form a binary system.",
+   "ux": 0.56,
+   "uy": -0.03,
+   "color": "#6ee7ff"
+  }
+ ],
+ "prefixes": [
+  {
+   "match": "whatsapp-mcp-mcp-run-",
+   "name": "whatsapp-mcp-run ×N",
+   "sys": "AI CORE",
+   "img": "whatsapp-mcp-server",
+   "desc": "Short-lived siblings the collector spawns per tool call."
+  },
+  {
+   "match": "cloudflared-",
+   "name": "cloudflared ×3",
+   "sys": "COMMS ARRAY",
+   "img": "cloudflare/cloudflared",
+   "desc": "Three Cloudflare tunnels, one per domain. Zero open ports to space."
+  },
+  {
+   "match": "clipcascade-",
+   "name": "clipcascade",
+   "sys": "COMMS ARRAY",
+   "img": "clipcascade",
+   "desc": "Clipboard sync across every device I own."
+  }
+ ],
+ "generated": "2026-08-08"
+}
