@@ -338,33 +338,56 @@ let kioskMode=location.hash==='#kiosk'||location.search.includes('kiosk');
 document.documentElement.dataset.kiosk=kioskMode?'on':'off';
 let kioskNextAt=performance.now()+6000,kioskIndex=-1,kioskPoolKey='',kioskPausedUntil=0;
 const pauseKiosk=()=>{if(kioskMode)kioskPausedUntil=performance.now()+90000;};
-function buildTourPool(){
+let tourIntroStep=0;
+let tourDeck=[];
+let lastTourTarget=null;
+
+function shuffle(arr){
+  const a=arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function getNextTourTarget(){
+  // 1. Initial entry sequence: Overview -> Singularity 46 -> Singularity dotpi
+  if(tourIntroStep===0){
+    tourIntroStep++;
+    return {type:'overview', name:'BINARY OVERVIEW'};
+  }
+  if(tourIntroStep===1){
+    tourIntroStep++;
+    const host46=HOSTS.find(h=>h.id==='46');
+    if(host46) return {type:'host', host:host46, name:host46.label};
+  }
+  if(tourIntroStep===2){
+    tourIntroStep++;
+    const hostDp=HOSTS.find(h=>h.id==='dotpi');
+    if(hostDp) return {type:'host', host:hostDp, name:hostDp.label};
+  }
+
+  // 2. Check for alerts: 30% chance to weave in an alerted system if any exist
   const alerts=RINGS.filter(r=>(SEV[r.alert]||0)>0);
-  const sys46=RINGS.filter(r=>r.host==='46');
-  const sysDotpi=RINGS.filter(r=>r.host==='dotpi');
-  
-  const pool=[];
-  pool.push({type:'overview', name:'BINARY OVERVIEW'});
-  
-  const host46=HOSTS.find(h=>h.id==='46');
-  if(host46) pool.push({type:'host', host:host46, name:host46.label});
-  
-  const hostDp=HOSTS.find(h=>h.id==='dotpi');
-  if(hostDp) pool.push({type:'host', host:hostDp, name:hostDp.label});
-  
-  const maxLen=Math.max(sys46.length, sysDotpi.length);
-  for(let i=0; i<maxLen; i++){
-    if(i<sys46.length) pool.push(sys46[i]);
-    if(i<sysDotpi.length) pool.push(sysDotpi[i]);
-    if(i>0 && i%3===0){
-      pool.push({type:'overview', name:'BINARY OVERVIEW'});
+  const urgent=alerts.find(a=>a!==lastTourTarget);
+  if(urgent && Math.random()<0.35){
+    return urgent;
+  }
+
+  // 3. Draw next target from randomized shuffle deck
+  if(!tourDeck || tourDeck.length===0){
+    const items=[...RINGS];
+    for(const h of HOSTS){ items.push({type:'host', host:h, name:h.label}); }
+    items.push({type:'overview', name:'BINARY OVERVIEW'});
+    items.push({type:'overview', name:'BINARY OVERVIEW'});
+    tourDeck=shuffle(items);
+    if(tourDeck.length>1 && tourDeck[0]===lastTourTarget){
+      tourDeck.push(tourDeck.shift());
     }
   }
-  
-  if(alerts.length){
-    return [...alerts, ...pool];
-  }
-  return pool;
+
+  return tourDeck.shift();
 }
 
 function setKioskCamera(target){
@@ -392,17 +415,17 @@ function setKioskCamera(target){
 
 function updateKioskCamera(t){
   if(!kioskMode||selected||dragging||t<kioskPausedUntil)return;
-  const pool=buildTourPool();
-  const key=pool.map(item=>(item.type?item.type+':'+item.name:item.id||item.name)).join('|');
-  if(key!==kioskPoolKey){kioskPoolKey=key;kioskIndex=-1;kioskNextAt=t;}
   if(t<kioskNextAt)return;
-  kioskIndex=(kioskIndex+1)%pool.length;
-  const currentTarget=pool[kioskIndex];
+  
+  const currentTarget=getNextTourTarget();
+  if(!currentTarget)return;
+  lastTourTarget=currentTarget;
+  
   setKioskCamera(currentTarget);
   const isAlert=currentTarget&&currentTarget.alert&&currentTarget.alert!=='ok';
   document.documentElement.dataset.kioskAlert=isAlert?'on':'off';
   
-  let dwell=24000;
+  let dwell=20000+Math.random()*8000; // 20s-28s randomized dwell for natural rhythm
   if(!currentTarget||currentTarget.type==='overview') dwell=10000;
   else if(currentTarget.type==='host') dwell=14000;
   kioskNextAt=t+dwell;
