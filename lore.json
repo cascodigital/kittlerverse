@@ -209,7 +209,8 @@
   "libretranslate": {
    "sys": "SCIENCE LAB",
    "img": "libretranslate",
-   "desc": "Self-hosted translation engine. The UN interpreter of the stack."
+   "desc": "Self-hosted translation engine. The UN interpreter of the stack.",
+   "dormant": true
   },
   "calibre-web": {
    "sys": "SCIENCE LAB",
