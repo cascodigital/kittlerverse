@@ -80,17 +80,20 @@
   "chatgpt-site-browser": {
    "sys": "AI CORE",
    "img": "chatgpt-site-browser",
-   "desc": "A browser that browses so I don’t have to."
+   "desc": "A browser that browses so I don’t have to.",
+   "dormant": true
   },
   "claude-site-browser": {
    "sys": "AI CORE",
    "img": "claude-site-browser",
-   "desc": "Same trick, Claude flavor."
+   "desc": "Same trick, Claude flavor.",
+   "dormant": true
   },
   "gemini-site-browser": {
    "sys": "AI CORE",
    "img": "gemini-site-browser",
-   "desc": "Same trick, Gemini flavor."
+   "desc": "Same trick, Gemini flavor.",
+   "dormant": true
   },
   "whatsapp-mcp-collector": {
    "sys": "AI CORE",

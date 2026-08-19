@@ -338,32 +338,74 @@ let kioskMode=location.hash==='#kiosk'||location.search.includes('kiosk');
 document.documentElement.dataset.kiosk=kioskMode?'on':'off';
 let kioskNextAt=performance.now()+6000,kioskIndex=-1,kioskPoolKey='',kioskPausedUntil=0;
 const pauseKiosk=()=>{if(kioskMode)kioskPausedUntil=performance.now()+90000;};
-function setKioskCamera(ring){
-  if(!ring){
-    targetZoom=0.72;
+function buildTourPool(){
+  const alerts=RINGS.filter(r=>(SEV[r.alert]||0)>0);
+  const sys46=RINGS.filter(r=>r.host==='46');
+  const sysDotpi=RINGS.filter(r=>r.host==='dotpi');
+  
+  const pool=[];
+  pool.push({type:'overview', name:'BINARY OVERVIEW'});
+  
+  const host46=HOSTS.find(h=>h.id==='46');
+  if(host46) pool.push({type:'host', host:host46, name:host46.label});
+  
+  const hostDp=HOSTS.find(h=>h.id==='dotpi');
+  if(hostDp) pool.push({type:'host', host:hostDp, name:hostDp.label});
+  
+  const maxLen=Math.max(sys46.length, sysDotpi.length);
+  for(let i=0; i<maxLen; i++){
+    if(i<sys46.length) pool.push(sys46[i]);
+    if(i<sysDotpi.length) pool.push(sysDotpi[i]);
+    if(i>0 && i%3===0){
+      pool.push({type:'overview', name:'BINARY OVERVIEW'});
+    }
+  }
+  
+  if(alerts.length){
+    return [...alerts, ...pool];
+  }
+  return pool;
+}
+
+function setKioskCamera(target){
+  const minWH=Math.min(W,H);
+  if(!target || target.type==='overview'){
+    targetZoom=0.68;
     targetPanX=0;
     targetPanY=0;
-    document.documentElement.dataset.kioskFocus='OVERVIEW';
+    document.documentElement.dataset.kioskFocus='BINARY SYSTEM OVERVIEW';
+  }else if(target.type==='host'){
+    const h=target.host;
+    const z=1.15;
+    targetZoom=z;
+    targetPanX=-h.ux*minWH*z;
+    targetPanY=-h.uy*minWH*z;
+    document.documentElement.dataset.kioskFocus='HOST: '+(h.label||h.name).toUpperCase();
   }else{
     const z=1.85;
-    const minWH=Math.min(W,H);
     targetZoom=z;
-    targetPanX=-ring.ux*minWH*z;
-    targetPanY=-ring.uy*minWH*z;
-    document.documentElement.dataset.kioskFocus=ring.name;
+    targetPanX=-target.ux*minWH*z;
+    targetPanY=-target.uy*minWH*z;
+    document.documentElement.dataset.kioskFocus=target.name;
   }
 }
+
 function updateKioskCamera(t){
   if(!kioskMode||selected||dragging||t<kioskPausedUntil)return;
-  const alerts=RINGS.filter(r=>(SEV[r.alert]||0)>0);
-  const pool=alerts.length?alerts:[null,...RINGS];
-  const key=alerts.length?'alerts:'+alerts.map(r=>r.name).join('|'):'tour';
+  const pool=buildTourPool();
+  const key=pool.map(item=>(item.type?item.type+':'+item.name:item.id||item.name)).join('|');
   if(key!==kioskPoolKey){kioskPoolKey=key;kioskIndex=-1;kioskNextAt=t;}
   if(t<kioskNextAt)return;
   kioskIndex=(kioskIndex+1)%pool.length;
-  setKioskCamera(pool[kioskIndex]);
-  document.documentElement.dataset.kioskAlert=alerts.length?'on':'off';
-  kioskNextAt=t+(pool[kioskIndex]?32000:12000);
+  const currentTarget=pool[kioskIndex];
+  setKioskCamera(currentTarget);
+  const isAlert=currentTarget&&currentTarget.alert&&currentTarget.alert!=='ok';
+  document.documentElement.dataset.kioskAlert=isAlert?'on':'off';
+  
+  let dwell=24000;
+  if(!currentTarget||currentTarget.type==='overview') dwell=10000;
+  else if(currentTarget.type==='host') dwell=14000;
+  kioskNextAt=t+dwell;
 }
 
 const shifts=[[0,0],[2,-2],[-2,2],[3,1],[-1,-3]];
