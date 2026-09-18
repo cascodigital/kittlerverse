@@ -13,6 +13,55 @@ REMOTES=${REMOTES:-"dotpi|aristofeles@192.168.2.102"}
 
 esc_sh() { printf '%s' "$1" | sed 's/\\/\\\\/g;s/"/\\"/g'; }
 
+# ---- host vitals (2026-09-17) --------------------------------------------
+# /proc inside the container IS the host's /proc (no namespace isolates these),
+# so the Orange Pi needs no extra mount. Disk comes from /out == /dados.
+collect_local_vitals() {
+  read -r _up _rest < /proc/uptime; printf 'uptime=%s\n' "${_up%.*}"
+  printf 'load=%s\n' "$(cut -d' ' -f1-3 /proc/loadavg)"
+  printf 'cores=%s\n' "$(nproc 2>/dev/null || grep -c '^processor' /proc/cpuinfo)"
+  awk '/^MemTotal:/{t=$2}/^MemAvailable:/{a=$2}END{printf "memtotal=%d\nmemavail=%d\n",t,a}' /proc/meminfo
+  printf 'cpustat=%s\n' "$(head -1 /proc/stat)"
+  _t=$(cat /sys/class/thermal/thermal_zone*/temp 2>/dev/null | sort -n | tail -1)
+  printf 'temp=%s\n' "${_t:-0}"
+  df -k /out 2>/dev/null | tail -1 | awk '{printf "disk_total=%.0f\ndisk_used=%.0f\ndisk_pct=%d\n",$2,$3,$5+0}'
+}
+
+# vitals_json <host-id> <kv-file>  ->  "vitals":{...}
+# CPU% needs two samples, so the previous /proc/stat line is kept per host in /tmp.
+# First cycle after a poller restart reports cpu -1 ("unknown"), never a fake 0.
+vitals_json() {
+  _id=$1; _f=$2
+  if [ ! -s "$_f" ]; then printf '"vitals":null'; return; fi
+  _prev=/tmp/cpustat.$_id
+  _now=$(sed -n 's/^cpustat=//p' "$_f")
+  _cpu=$(awk -v now="$_now" -v prev="$(cat $_prev 2>/dev/null)" '
+    BEGIN{
+      if(prev==""){printf "-1";exit}
+      n=split(now,a," "); p=split(prev,b," ");
+      if(n<6||p<6){printf "-1";exit}
+      tn=0; tp=0;
+      for(i=2;i<=n;i++)tn+=a[i];
+      for(i=2;i<=p;i++)tp+=b[i];
+      dt=tn-tp; di=(a[5]+a[6])-(b[5]+b[6]);
+      if(dt<=0){printf "-1";exit}
+      v=100*(dt-di)/dt; if(v<0)v=0; if(v>100)v=100;
+      printf "%.1f", v
+    }')
+  printf '%s' "$_now" > $_prev
+  awk -v cpu="$_cpu" -F= '
+    {v[$1]=$2}
+    END{
+      split(v["load"],l," ");
+      mt=v["memtotal"]+0; ma=v["memavail"]+0;
+      mp=(mt>0)?100*(mt-ma)/mt:0;
+      printf "\"vitals\":{\"uptime\":%d,\"load1\":%.2f,\"load5\":%.2f,\"load15\":%.2f,\"cores\":%d,\"cpu\":%.1f,\"mem_total_mb\":%d,\"mem_used_mb\":%d,\"mem_pct\":%.1f,\"temp\":%.1f,\"disk_total_gb\":%.1f,\"disk_used_gb\":%.1f,\"disk_pct\":%d}", \
+        v["uptime"]+0, l[1]+0, l[2]+0, l[3]+0, v["cores"]+0, cpu+0, \
+        mt/1024, (mt-ma)/1024, mp, (v["temp"]+0)/1000, \
+        (v["disk_total"]+0)/1048576, (v["disk_used"]+0)/1048576, v["disk_pct"]+0
+    }' "$_f"
+}
+
 # emit_json <host-id> <stats-file> <inspect-file> <ps-file>
 # prints the container objects (comma-separated, no wrapping brackets)
 emit_json() {
@@ -50,8 +99,10 @@ while true; do
     | sed 's#^/##' > /tmp/46.in
   LOCAL=$(emit_json 46 /tmp/46.st /tmp/46.in /tmp/46.ps)
   LOCAL_N=$(grep -c . /tmp/46.ps 2>/dev/null || echo 0)
+  collect_local_vitals > /tmp/46.vit 2>/dev/null
+  LOCAL_VIT=$(vitals_json 46 /tmp/46.vit)
   BODY="$LOCAL"
-  HOSTS_JSON="{\"id\":\"46\",\"reachable\":true,\"containers\":$LOCAL_N,\"error\":\"\"}"
+  HOSTS_JSON="{\"id\":\"46\",\"reachable\":true,\"containers\":$LOCAL_N,\"error\":\"\",$LOCAL_VIT}"
 
   # ---------- remotes ----------
   for R in $REMOTES; do
@@ -69,18 +120,20 @@ while true; do
         /^###PS$/     {sec="ps";  next}
         /^###STATS$/  {sec="st";  next}
         /^###INSPECT$/{sec="in";  next}
+        /^###VITALS$/ {sec="vit"; next}
         /^###END$/    {sec="";    next}
         sec!=""{print > ("/tmp/" id "." sec)}
       ' $RAW
-      for f in ps st in; do [ -f /tmp/$RID.$f ] || : > /tmp/$RID.$f; done
+      for f in ps st in vit; do [ -f /tmp/$RID.$f ] || : > /tmp/$RID.$f; done
       REM=$(emit_json "$RID" /tmp/$RID.st /tmp/$RID.in /tmp/$RID.ps)
       REM_N=$(grep -c . /tmp/$RID.ps 2>/dev/null || echo 0)
       [ -n "$REM" ] && BODY="$BODY,$REM"
-      HOSTS_JSON="$HOSTS_JSON,{\"id\":\"$RID\",\"reachable\":true,\"containers\":$REM_N,\"error\":\"\"}"
-      rm -f /tmp/$RID.ps /tmp/$RID.st /tmp/$RID.in
+      REM_VIT=$(vitals_json "$RID" /tmp/$RID.vit)
+      HOSTS_JSON="$HOSTS_JSON,{\"id\":\"$RID\",\"reachable\":true,\"containers\":$REM_N,\"error\":\"\",$REM_VIT}"
+      rm -f /tmp/$RID.ps /tmp/$RID.st /tmp/$RID.in /tmp/$RID.vit
     else
       ERR=$(esc_sh "$(tail -c 160 /tmp/$RID.err 2>/dev/null | tr '\n' ' ')")
-      HOSTS_JSON="$HOSTS_JSON,{\"id\":\"$RID\",\"reachable\":false,\"containers\":0,\"error\":\"$ERR\"}"
+      HOSTS_JSON="$HOSTS_JSON,{\"id\":\"$RID\",\"reachable\":false,\"containers\":0,\"error\":\"$ERR\",\"vitals\":null}"
     fi
     rm -f $RAW
   done
