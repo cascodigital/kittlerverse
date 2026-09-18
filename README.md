@@ -18,6 +18,7 @@
 A single-file HTML5 canvas app that renders every container on a Docker host as an orbital body in an interactive galaxy — with **live telemetry** (RAM, CPU, uptime, state, health, OOM and restart signals) refreshed every minute by a lightweight sidecar poller. No agents, no database, no JavaScript frameworks. Two containers, one shell script, one HTML file.
 
 ![KITTLERVERSE](docs/screenshots/galaxy.png)
+<sub>Two Docker hosts as a binary system — each singularity is a host, joined by a gravitational bridge.</sub>
 
 ## The visual language
 
@@ -33,6 +34,15 @@ Everything on screen encodes a real metric. Nothing is decoration.
 | ⚪ **White dwarf** | The Graveyard. Dead and dormant containers migrate there — and fly home if resurrected |
 | ○ **White glow** | Container (re)started in the last 24 h, fading with age |
 | ✹ **Supernova** | OOM, unhealthy state, restart loop, stopped container or failed critical probe |
+
+![Host vitals](docs/screenshots/host-vitals.png)
+<sub>**Host vitals.** Park on a singularity and the host itself reports: CPU, load, memory, temperature, disk and uptime. A value over its threshold blinks red.</sub>
+
+![System zoom](docs/screenshots/system-zoom.png)
+<sub>**Zoomed into a system.** Planet labels resolve as you approach; the host vitals recede to a single quiet line so you never lose the machine you are standing on.</sub>
+
+![Something is out](docs/screenshots/alert.png)
+<sub>**Something is out.** Only containers that are genuinely down — scheduled/dormant ones exit 0 on purpose and are never listed — within a 2 h window. Nothing out, nothing drawn.</sub>
 
 **Controls:** drag to travel · scroll to zoom into a system · hover freezes a planet · click any body for its dossier. `#still` in the URL skips the warp intro (handy for headless screenshots). `prefers-reduced-motion` respected.
 
