@@ -18,7 +18,7 @@ Container dashboards usually mean either a heavy monitoring stack (Prometheus, G
 - Flags OOM kills, `unhealthy` health checks, restart loops and stopped containers as alerts, and lists containers that went down in the last 2 hours.
 - Polls additional Docker hosts over SSH through a read-only forced-command probe, and shows per-host vitals (CPU, load, memory, temperature, disk, uptime).
 - Exposes optional start/stop/restart/log actions for local containers through a small Python API with an origin allowlist and a container denylist.
-- Provides a kiosk mode (`#kiosk` or the `T` key) that tours hosts and systems automatically, and a separate DOM-only "Ops Board" (`kiosk.html`).
+- Provides a kiosk mode (`#kiosk` or the `T` key) that tours hosts and systems automatically, for wall displays.
 - Uses no frameworks, no database and no external front-end dependencies.
 
 ## How it works
@@ -125,7 +125,6 @@ Keep `<meta charset="utf-8">` as the first line of `www/index.html`: nginx does 
 | `http://<host>:8096/` | Interactive galaxy: drag to pan, scroll to zoom, hover to freeze a planet, click for details |
 | `#kiosk` or `T` key | Automatic tour across hosts and systems |
 | `#still` | Skips the intro animation (useful for headless screenshots) |
-| `http://<host>:8096/kiosk.html` | Ops Board: DOM-only summary per host and system |
 | `GET :8097/health` | Control API health (Docker ping) |
 | `GET :8097/containers/<name>/logs?tail=200` | Last 1-500 log lines |
 | `POST :8097/containers/<name>/{start,stop,restart}` | Container action (local host, non-denied containers only) |
