@@ -254,7 +254,7 @@ function applyLive(data){
         // legendas is dormant but MUST run daily — silence for 24h+ is an alert
         if(pl.key==='legendas'&&c.state!=='running'){
           const m=(c.status||'').match(/(\d+)\s+(hour|day|week|month)s?\s+ago/i);
-          if(m&&(m[2].toLowerCase()!=='hour'||+m[1]>=24)){bad=true;reason='sem rodar há '+m[1]+' '+m[2]+'(s)';}
+          if(m&&(m[2].toLowerCase()!=='hour'||+m[1]>=24)){bad=true;reason='not run for '+m[1]+' '+m[2]+'(s)';}
         }
       }
       p.tot++;p.ram+=pmem;p.cpu+=pcpu;if(running)p.up++;

@@ -50,7 +50,7 @@
   "claude-terminal": {
    "sys": "AI CORE",
    "img": "claude-terminal:ttyd",
-   "desc": "The Skippy Console. A web terminal where Claude, Gemini and Codex do sysadmin work around the clock."
+   "desc": "The AI console. A web terminal where Claude, Gemini and Codex do sysadmin work around the clock."
   },
   "claude-worker": {
    "sys": "AI CORE",
@@ -418,7 +418,7 @@
    "glyph": "δ",
    "label": "DOTPI · COMPANION",
    "name": "dotpi — the companion singularity",
-   "img": "Dell OptiPlex 7070 · 6 cores x86_64 · 16 GB · Ubuntu 26.04 bare metal · 192.0.2.10",
+   "img": "Dell OptiPlex 7070 · 6 cores x86_64 · 16 GB · Ubuntu 26.04 bare metal",
    "desc": "The second singularity, captured in July 2026 when the Orange Pi ran out of RAM. Heavier, hungrier, and steadily pulling workloads out of its companion's orbit. The two form a binary system.",
    "ux": 0.56,
    "uy": -0.03,
