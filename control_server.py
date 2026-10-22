@@ -23,7 +23,7 @@ _ORIGINS = [
     o.strip()
     for o in os.environ.get(
         "GALAXY_ALLOWED_ORIGINS",
-        "http://192.0.2.10:8096,http://localhost:8096,http://127.0.0.1:8096",
+        "http://localhost:8096,http://127.0.0.1:8096",
     ).split(",")
     if o.strip()
 ]
@@ -32,8 +32,8 @@ DENY_EXACT = {"galaxy-web", "galaxy-poller", "galaxy-control", "watchtower", "n8
 DENY_PREFIX = ("cloudflared-",)
 NAME_RE = re.compile(r"^[A-Za-z0-9_.-]+$")
 # "legendas" is a scheduled compose service; starting it re-runs `docker compose up`.
-LEGENDAS_COMPOSE_DIR = "/srv/dockers/legendas"
-LEGENDAS_ENV_FILE = "/srv/dockers/claude/ai/config/api_key.txt"
+LEGENDAS_COMPOSE_DIR = os.environ.get("LEGENDAS_COMPOSE_DIR", "/srv/legendas")
+LEGENDAS_ENV_FILE = os.environ.get("LEGENDAS_ENV_FILE", "/srv/legendas/.env")
 
 
 class UnixHTTPConnection(http.client.HTTPConnection):
