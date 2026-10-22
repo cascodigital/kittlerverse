@@ -159,7 +159,7 @@
 </div>
 <div class="hud" id="hint">drag to travel · scroll to zoom into a system · click a body for dossier</div>
 <div class="hud" id="live" style="top:104px;right:26px;text-align:right;font-size:10px;letter-spacing:.18em;color:var(--dim);text-transform:uppercase"></div>
-<div class="hud" id="credit">cartography by <b>Skippy the Magnificent</b> · via Claude Code — resident of the AI CORE system</div>
+<div class="hud" id="credit">cartography via <b>Claude Code</b> — resident of the AI CORE system</div>
 <div class="hud" id="legend">
   <button id="legbtn" aria-expanded="false">HOW THE METRICS WORK ▾</button>
   <div class="body">
@@ -495,7 +495,7 @@ function vcell(val,key,sub,hot){
         +'<div class="vk">'+key+'</div><div class="vs">'+(sub||'&nbsp;')+'</div></div>';
 }
 // ---- WHAT'S OUT (2026-09-17) ----------------------------------------------
-// André's rule: dormant/timer containers exit 0 by design and must never show up
+// Rule: dormant/timer containers exit 0 by design and must never show up
 // here, and anything down for more than 2 h is an old decision, not news.
 const downEl=document.getElementById('down');
 const DOWN_WINDOW_H=2;

@@ -1,5 +1,5 @@
 #!/bin/sh
-# galaxy-probe — read-only docker snapshot for the Kittlerverse poller on 192.0.2.10.
+# galaxy-probe — read-only docker snapshot for the Kittlerverse poller running on the main host.
 # Invoked as a forced command from authorized_keys: no shell, no arguments honoured.
 printf "###PS\n"
 docker ps -a --format "{{.Names}}\t{{.State}}\t{{.Status}}"

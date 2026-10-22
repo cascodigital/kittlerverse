@@ -8,8 +8,8 @@
 # can never do more than read `docker ps/stats/inspect` there.
 OUT=${OUT:-/out/telemetry.json}
 SSH_KEY=${SSH_KEY:-/keys/galaxy_dotpi}
-# id|ssh target  (one per line)
-REMOTES=${REMOTES:-"dotpi|user@192.0.2.10"}
+# id|ssh target, whitespace-separated. Set REMOTES="" to poll only the local host.
+REMOTES=${REMOTES-"dotpi|user@192.0.2.10"}
 
 esc_sh() { printf '%s' "$1" | sed 's/\\/\\\\/g;s/"/\\"/g'; }
 

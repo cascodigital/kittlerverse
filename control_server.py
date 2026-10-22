@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+"""galaxy-control: minimal LAN API over the local Docker socket.
+
+Serves container logs and start/stop/restart actions for the Galaxy UI.
+CORS is limited to ALLOWED_ORIGINS; critical and self containers are denied.
+Standard library only.
+"""
 import http.client
 import json
 import os
@@ -11,14 +17,21 @@ from urllib.parse import parse_qs, quote, unquote, urlparse
 DOCKER_SOCK = os.environ.get("DOCKER_SOCK", "/var/run/docker.sock")
 HOST = os.environ.get("GALAXY_CONTROL_HOST", "0.0.0.0")
 PORT = int(os.environ.get("GALAXY_CONTROL_PORT", "8097"))
-ALLOWED_ORIGINS = {
-    "http://192.0.2.10:8096",
-    "http://localhost:8096",
-    "http://127.0.0.1:8096",
-}
+# Comma-separated override via GALAXY_ALLOWED_ORIGINS; the first entry is also
+# the fallback Access-Control-Allow-Origin for unknown origins.
+_ORIGINS = [
+    o.strip()
+    for o in os.environ.get(
+        "GALAXY_ALLOWED_ORIGINS",
+        "http://192.0.2.10:8096,http://localhost:8096,http://127.0.0.1:8096",
+    ).split(",")
+    if o.strip()
+]
+ALLOWED_ORIGINS = set(_ORIGINS)
 DENY_EXACT = {"galaxy-web", "galaxy-poller", "galaxy-control", "watchtower", "n8n"}
 DENY_PREFIX = ("cloudflared-",)
 NAME_RE = re.compile(r"^[A-Za-z0-9_.-]+$")
+# "legendas" is a scheduled compose service; starting it re-runs `docker compose up`.
 LEGENDAS_COMPOSE_DIR = "/srv/dockers/legendas"
 LEGENDAS_ENV_FILE = "/srv/dockers/claude/ai/config/api_key.txt"
 
@@ -117,7 +130,7 @@ class Handler(BaseHTTPRequestHandler):
         origin = self.headers.get("Origin")
         if origin in ALLOWED_ORIGINS:
             return origin
-        return "http://192.0.2.10:8096"
+        return _ORIGINS[0] if _ORIGINS else "null"
 
     def _headers(self, status=200, content_type="application/json"):
         self.send_response(status)

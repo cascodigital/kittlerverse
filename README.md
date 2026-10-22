@@ -1,106 +1,151 @@
-<div align="center">
+# kittlerverse
 
-# KITTLERVERSE — Container Star System
+A browser-based visualization of one or more Docker hosts as an interactive galaxy, with live container telemetry, for self-hosters who want an at-a-glance view of their stack.
 
-**Your Docker host as a living galaxy. Every container is a planet. Dead ones drift to the graveyard.**
+![License](https://img.shields.io/badge/license-MIT-blue) ![JavaScript](https://img.shields.io/badge/JavaScript-vanilla-F7DF1E) ![Status](https://img.shields.io/badge/status-active-green)
 
-![Status](https://img.shields.io/badge/Status-Active-16A34A?style=flat-square)
-![License](https://img.shields.io/badge/License-MIT-2563EB?style=flat-square)
-![Casco Digital](https://img.shields.io/badge/Casco-Digital-111827?style=flat-square)
-![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=flat-square&logo=docker&logoColor=white)
-![Canvas](https://img.shields.io/badge/Canvas_2D-zero_dependencies-F97316?style=flat-square)
-![Footprint](https://img.shields.io/badge/RAM-~14_MB_total-5EEA8D?style=flat-square)
+![Galaxy view](docs/screenshots/galaxy.png)
+<sub>Two Docker hosts rendered as a binary system: each singularity is a host, joined by a bridge.</sub>
 
-</div>
+## Overview
 
----
+Container dashboards usually mean either a heavy monitoring stack (Prometheus, Grafana, an agent per host) or a plain table of names and states. kittlerverse sits in between: a static HTML5 canvas page plus a shell-script sidecar that snapshots `docker ps`, `docker stats` and `docker inspect` once a minute into a JSON file. Every visual property maps to a real metric, so problems (OOM kills, unhealthy checks, restart loops, stopped containers) are visible from across the room.
 
-A single-file HTML5 canvas app that renders every container on a Docker host as an orbital body in an interactive galaxy — with **live telemetry** (RAM, CPU, uptime, state, health, OOM and restart signals) refreshed every minute by a lightweight sidecar poller. No agents, no database, no JavaScript frameworks. Two containers, one shell script, one HTML file.
+## Features
 
-![KITTLERVERSE](docs/screenshots/galaxy.png)
-<sub>Two Docker hosts as a binary system — each singularity is a host, joined by a gravitational bridge.</sub>
+- Renders each container as a planet whose size tracks RAM use and whose orbital speed tracks live CPU load.
+- Groups containers into themed "systems" defined in `www/lore.json`; containers missing from it appear automatically in an `UNCHARTED` system.
+- Flags OOM kills, `unhealthy` health checks, restart loops and stopped containers as alerts, and lists containers that went down in the last 2 hours.
+- Polls additional Docker hosts over SSH through a read-only forced-command probe, and shows per-host vitals (CPU, load, memory, temperature, disk, uptime).
+- Exposes optional start/stop/restart/log actions for local containers through a small Python API with an origin allowlist and a container denylist.
+- Provides a kiosk mode (`#kiosk` or the `T` key) that tours hosts and systems automatically, and a separate DOM-only "Ops Board" (`kiosk.html`).
+- Uses no frameworks, no database and no external front-end dependencies.
 
-## The visual language
+## How it works
 
-Everything on screen encodes a real metric. Nothing is decoration.
+```
++---------------------------------------------------+
+|                    Docker host                    |
+|                                                   |
+|  galaxy-poller (docker:cli)                       |
+|    docker ps/stats/inspect + /proc vitals         |
+|    + SSH to remote hosts (read-only probe)        |
+|    --every 60 s--> www/telemetry.json             |
+|                                                   |
+|  galaxy-web (nginx:alpine, port 8096)             |
+|    serves www/ as static files                    |
+|    browser fetches telemetry.json every 60 s      |
+|                                                   |
+|  galaxy-control (python:3.11-alpine, port 8097)   |
+|    Docker Engine API over /var/run/docker.sock    |
+|    logs + start/stop/restart (local host only)    |
++---------------------------------------------------+
+```
+
+- **Telemetry never touches the Docker socket from the browser.** The poller mounts the socket read-only and writes a flat JSON file; nginx only serves static files.
+- **Remote hosts are read-only by design.** The poller connects with an SSH key that the remote `authorized_keys` binds to a forced command (`galaxy-probe.remote.sh`, installed as `~/bin/galaxy-probe`). The key can only print a Docker and `/proc` snapshot. Control actions are offered only for containers on the local host.
+- **Data-driven map.** `telemetry.json` says what exists and on which host; `lore.json` says which system a container belongs to, its description, support "moons" (databases, caches, cron) and name prefixes for short-lived sibling containers. Nothing is hardcoded in the HTML, so the map cannot drift from reality.
+- **CPU percentage for host vitals** needs two `/proc/stat` samples; the first cycle after a poller restart reports `-1` (unknown) instead of a fake zero.
+- **Control API safety.** `control_server.py` validates container names, denies `galaxy-*`, `watchtower`, `n8n` and `cloudflared-*`, and restricts CORS to the configured origins.
+
+### Visual language
 
 | Body | Meaning |
 |------|---------|
-| ⚫ **Black hole** | The host itself. Size ∝ total RAM devoured by all containers. Click it for the host dossier |
-| ◉ **Suns** | Thematic systems (AI CORE, MEDIA CARTEL, ENGINE ROOM…). Size ∝ combined RAM of their worlds |
-| ● **Planets** | Containers. Size ∝ RAM, orbit speed ∝ live CPU load |
-| ◐ **Saturn rings** | CPU ≥ 20% gets a ring, ≥ 40% gets two |
-| ☽ **Moons** | Support containers (db, redis, cron) orbiting their parent planet |
-| ⚪ **White dwarf** | The Graveyard. Dead and dormant containers migrate there — and fly home if resurrected |
-| ○ **White glow** | Container (re)started in the last 24 h, fading with age |
-| ✹ **Supernova** | OOM, unhealthy state, restart loop, stopped container or failed critical probe |
+| Black hole | A Docker host. Size scales with total container RAM. Click for host details and vitals |
+| Sun | A themed system. Size scales with the combined RAM of its containers |
+| Planet | A container. Size scales with RAM, orbit speed with CPU |
+| Rings | CPU >= 20% adds one ring, >= 40% adds two |
+| Moon | A support container orbiting its parent |
+| White dwarf | The graveyard, where stopped and dormant containers collect |
+| White glow | Container (re)started in the last 24 h, fading with age |
+| Supernova | OOM, unhealthy, restart loop, stopped container or failed service probe |
 
 ![Host vitals](docs/screenshots/host-vitals.png)
-<sub>**Host vitals.** Park on a singularity and the host itself reports: CPU, load, memory, temperature, disk and uptime. A value over its threshold blinks red.</sub>
+<sub>Host vitals: CPU, load, memory, temperature, disk and uptime. Values over threshold blink red.</sub>
 
 ![System zoom](docs/screenshots/system-zoom.png)
-<sub>**Zoomed into a system.** Planet labels resolve as you approach; the host vitals recede to a single quiet line so you never lose the machine you are standing on.</sub>
+<sub>Zoomed into a system: labels resolve on approach.</sub>
 
-![Something is out](docs/screenshots/alert.png)
-<sub>**Something is out.** Only containers that are genuinely down — scheduled/dormant ones exit 0 on purpose and are never listed — within a 2 h window. Nothing out, nothing drawn.</sub>
+![Alert list](docs/screenshots/alert.png)
+<sub>Containers that went down in the last 2 hours. Dormant containers that exit 0 on schedule are excluded.</sub>
 
-**Controls:** drag to travel · scroll to zoom into a system · hover freezes a planet · click any body for its dossier. `#still` in the URL skips the warp intro (handy for headless screenshots). `prefers-reduced-motion` respected.
+## Requirements
 
-## Architecture
-
-```
-+---------------------------------------------------+
-|                    docker host                    |
-|                                                   |
-|  galaxy-poller (docker:cli, ~10 MB)               |
-|    docker ps/stats/inspect + cheap probes         |
-|    --every 60s--> www/telemetry.json              |
-|                                                   |
-|  galaxy-web (nginx:alpine, ~4 MB)                 |
-|    serves www/  --> browser fetches               |
-|    telemetry.json every 60s                       |
-|                                                   |
-|  galaxy-control (python:alpine)                   |
-|    Docker API over /var/run/docker.sock           |
-|    start/stop/restart/logs on port 8097           |
-+---------------------------------------------------+
-```
-
-No socket exposure to the browser for telemetry: the poller reads `/var/run/docker.sock` **read-only** and writes a flat JSON file; nginx serves static files and nothing else. Optional control actions go through `galaxy-control`, a tiny LAN API with CORS restricted to the Galaxy UI and a denylist for critical/self containers. The extra alert signals come from Docker metadata plus tiny service probes, not from a monitoring database. If `telemetry.json` is unreachable, the app degrades to static mode with the hardcoded inventory.
+- Linux host with Docker Engine and Docker Compose v2.
+- A modern browser (Canvas 2D).
+- Optional, for multi-host mode: SSH access to each remote host with a dedicated key restricted to the probe script.
 
 ## Quick start
 
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/cascodigital/kittlerverse
+   cd kittlerverse
+   ```
+
+2. For a single host, disable remote polling by adding an environment entry to the `galaxy-poller` service in `docker-compose.yml`:
+
+   ```yaml
+       environment:
+         - REMOTES=
+   ```
+
+3. Start the stack:
+
+   ```bash
+   docker compose up -d
+   ```
+
+4. Open `http://<host>:8096`. The bundled `www/telemetry.json` sample renders immediately and is replaced by live data within a minute.
+
+5. Map your containers to systems by editing `www/lore.json` (`systems`, `bodies`, `moons`, `prefixes`, `hosts`).
+
+## Configuration
+
+| Variable / key | Required | Default | Description |
+|---|---|---|---|
+| `REMOTES` (poller) | No | one sample remote | Whitespace-separated `id\|user@host` entries polled over SSH. Empty string polls only the local host |
+| `SSH_KEY` (poller) | No | `/keys/galaxy_dotpi` | Private key path inside the poller container |
+| `OUT` (poller) | No | `/out/telemetry.json` | Output file for the snapshot |
+| `GALAXY_DOTPI_KEY` (compose) | No | `~/.ssh/id_ed25519_galaxy_dotpi` | Host path of the SSH key mounted into the poller |
+| `DOCKER_SOCK` (control) | No | `/var/run/docker.sock` | Docker socket used by `galaxy-control` |
+| `GALAXY_CONTROL_HOST` (control) | No | `0.0.0.0` | Bind address |
+| `GALAXY_CONTROL_PORT` (control) | No | `8097` | Listen port |
+| `GALAXY_ALLOWED_ORIGINS` (control) | No | LAN host + localhost on port 8096 | Comma-separated CORS allowlist |
+| `www/lore.json` | No | sample inventory | Systems, container descriptions, moons, prefixes and host metadata |
+
+Keep `<meta charset="utf-8">` as the first line of `www/index.html`: nginx does not declare a charset, and the host glyphs render incorrectly without it.
+
+## Usage
+
+| URL / input | Effect |
+|---|---|
+| `http://<host>:8096/` | Interactive galaxy: drag to pan, scroll to zoom, hover to freeze a planet, click for details |
+| `#kiosk` or `T` key | Automatic tour across hosts and systems |
+| `#still` | Skips the intro animation (useful for headless screenshots) |
+| `http://<host>:8096/kiosk.html` | Ops Board: DOM-only summary per host and system |
+| `GET :8097/health` | Control API health (Docker ping) |
+| `GET :8097/containers/<name>/logs?tail=200` | Last 1-500 log lines |
+| `POST :8097/containers/<name>/{start,stop,restart}` | Container action (local host, non-denied containers only) |
+
+A frozen snapshot can be published anywhere that serves static files, for example GitHub Pages:
+
 ```bash
-git clone https://github.com/cascodigital/kittlerverse
-cd kittlerverse
-docker compose up -d
-# open http://<host>:8096
+git subtree split --prefix www -b gh-pages && git push -f origin gh-pages
 ```
 
-Then make it yours: edit the `RINGS` inventory at the top of `www/index.html` — each entry is `[container-name, image, lore]` grouped into the star system of your choice. Containers present in telemetry but missing from the map are auto-spawned into an **UNCHARTED** system, so nothing ever hides from you.
+Live demo (frozen snapshot): https://cascodigital.github.io/kittlerverse/
 
-## Files
+## Limitations
 
-| File | Role |
-|------|------|
-| `www/index.html` | The entire app — canvas renderer, physics, HUD, dossiers. Zero external dependencies |
-| `poller.sh` | POSIX shell + awk loop that turns Docker state, stats, inspect metadata and critical probes into `telemetry.json` |
-| `control_server.py` | Dependency-free Python API for logs and start/stop/restart actions |
-| `docker-compose.yml` | `galaxy-web` (nginx) + `galaxy-poller` (docker:cli) + `galaxy-control` |
-| `www/telemetry.json` | Sample snapshot so the galaxy is alive on first boot |
+- The poller always runs one service probe for a container named `cockpit`; on other setups it reports `cockpit-search` as critical. Remove that block from `poller.sh` if it does not apply.
+- `control_server.py` contains a special case that starts a `legendas` compose service from a fixed path; it is specific to the original deployment.
+- The local host is identified as `46` in telemetry, and control actions are enabled only for that host id.
+- `galaxy-control` mounts the Docker socket read-write and has no authentication beyond CORS; expose it only on a trusted LAN.
+- Telemetry resolution is 60 seconds; this is a status view, not a metrics history.
 
-> ⚠ Keep `<meta charset="utf-8">` as the **first line** of `index.html` — nginx doesn't declare a charset and the π on the singularity turns to mojibake without it.
+## License
 
-## Static demo
-
-**[▶ Live demo (frozen snapshot)](https://cascodigital.github.io/kittlerverse/)** — served from the `gh-pages` branch via GitHub Pages, with real telemetry baked in. The app detects the missing live feed and keeps rendering, so a snapshot can be published anywhere that serves one HTML file. To refresh it: `git subtree split --prefix www -b gh-pages && git push -f origin gh-pages`.
-
----
-
-<div align="center">
-
-**Built by [André Kittler](https://github.com/cascodigital) · Casco Digital** — concept, inventory, and the Orange Pi 5 it all runs on
-
-*cartography by Skippy the Magnificent · via [Claude Code](https://claude.com/claude-code) — resident of the AI CORE system*
-
-</div>
+MIT — see [LICENSE](LICENSE).
