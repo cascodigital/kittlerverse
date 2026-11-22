@@ -46,7 +46,7 @@ Container dashboards usually mean either a heavy monitoring stack (Prometheus, G
 - **Remote hosts are read-only by design.** The poller connects with an SSH key that the remote `authorized_keys` binds to a forced command (`galaxy-probe.remote.sh`, installed as `~/bin/galaxy-probe`). The key can only print a Docker and `/proc` snapshot. Control actions are offered only for containers on the local host.
 - **Data-driven map.** `telemetry.json` says what exists and on which host; `lore.json` says which system a container belongs to, its description, support "moons" (databases, caches, cron) and name prefixes for short-lived sibling containers. Nothing is hardcoded in the HTML, so the map cannot drift from reality.
 - **CPU percentage for host vitals** needs two `/proc/stat` samples; the first cycle after a poller restart reports `-1` (unknown) instead of a fake zero.
-- **Control API safety.** `control_server.py` validates container names, denies `galaxy-*`, `watchtower`, `n8n` and `cloudflared-*`, and restricts CORS to the configured origins.
+- **Control API safety.** `control_server.py` validates container names, denies `galaxy-web`, `galaxy-poller`, `galaxy-control`, `watchtower`, `n8n` and `cloudflared-*`, and restricts CORS to the configured origins.
 
 ### Visual language
 
@@ -85,35 +85,28 @@ Container dashboards usually mean either a heavy monitoring stack (Prometheus, G
    cd kittlerverse
    ```
 
-2. For a single host, disable remote polling by adding an environment entry to the `galaxy-poller` service in `docker-compose.yml`:
-
-   ```yaml
-       environment:
-         - REMOTES=
-   ```
-
-3. Start the stack:
+2. Start the stack:
 
    ```bash
    docker compose up -d
    ```
 
-4. Open `http://<host>:8096`. The bundled `www/telemetry.json` sample renders immediately and is replaced by live data within a minute.
+3. Open `http://<host>:8096`. The bundled `www/telemetry.json` sample renders immediately and is replaced by live data within a minute.
 
-5. Map your containers to systems by editing `www/lore.json` (`systems`, `bodies`, `moons`, `prefixes`, `hosts`).
+4. Map your containers to systems by editing `www/lore.json` (`systems`, `bodies`, `moons`, `prefixes`, `hosts`).
 
 ## Configuration
 
 | Variable / key | Required | Default | Description |
 |---|---|---|---|
-| `REMOTES` (poller) | No | one sample remote | Whitespace-separated `id\|user@host` entries polled over SSH. Empty string polls only the local host |
+| `REMOTES` (poller) | No | empty (local host only) | Whitespace-separated `id\|user@host` entries polled over SSH |
 | `SSH_KEY` (poller) | No | `/keys/galaxy_dotpi` | Private key path inside the poller container |
 | `OUT` (poller) | No | `/out/telemetry.json` | Output file for the snapshot |
 | `GALAXY_DOTPI_KEY` (compose) | No | `~/.ssh/id_ed25519_galaxy_dotpi` | Host path of the SSH key mounted into the poller |
 | `DOCKER_SOCK` (control) | No | `/var/run/docker.sock` | Docker socket used by `galaxy-control` |
 | `GALAXY_CONTROL_HOST` (control) | No | `0.0.0.0` | Bind address |
 | `GALAXY_CONTROL_PORT` (control) | No | `8097` | Listen port |
-| `GALAXY_ALLOWED_ORIGINS` (control) | No | LAN host + localhost on port 8096 | Comma-separated CORS allowlist |
+| `GALAXY_ALLOWED_ORIGINS` (control) | No | `http://localhost:8096,http://127.0.0.1:8096` | Comma-separated CORS allowlist. Set it when the page is opened from another machine |
 | `www/lore.json` | No | sample inventory | Systems, container descriptions, moons, prefixes and host metadata |
 
 Keep `<meta charset="utf-8">` as the first line of `www/index.html`: nginx does not declare a charset, and the host glyphs render incorrectly without it.
@@ -144,6 +137,7 @@ Live demo (frozen snapshot): https://cascodigital.github.io/kittlerverse/
 - The local host is identified as `46` in telemetry, and control actions are enabled only for that host id.
 - `galaxy-control` mounts the Docker socket read-write and has no authentication beyond CORS; expose it only on a trusted LAN.
 - Telemetry resolution is 60 seconds; this is a status view, not a metrics history.
+- Remote host disk vitals read `df -k /dados` in `galaxy-probe.remote.sh`; edit that path on hosts without `/dados`.
 
 ## License
 
